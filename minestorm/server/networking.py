@@ -91,6 +91,7 @@ class Request:
             self.data = json.loads(data.decode("utf-8")) # Decode json request
         # Catch invalid json input
         except ( SyntaxError, ValueError) as e:
+            self.data = {}
             self.reply({'status': 'invalid_request', 'reason': 'Invalid JSON: {0!s}'.format(e)}) # Reply invalid_request
 
     def reply(self, data):

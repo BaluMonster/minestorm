@@ -27,16 +27,18 @@ class RequestSorter:
         """ Sort a request and pass it to the right processor """
         # Allow only minestorm.server.networking.Request instance
         if isinstance(request, minestorm.server.networking.Request):
-            # status key is needed
-            if 'status' in request.data:
-                # Check if the status is valid and a processor exists for it
-                if request.data['status'] in self.processors:
-                    # Process the request
-                    self.processors[ request.data['status'] ]._process( request )
+            # If no reply was sent yet
+            if not request.replied:
+                # status key is needed
+                if 'status' in request.data:
+                    # Check if the status is valid and a processor exists for it
+                    if request.data['status'] in self.processors:
+                        # Process the request
+                        self.processors[ request.data['status'] ]._process( request )
+                    else:
+                        request.reply({'status': 'invalid_request', 'reason': 'Invalid status code'})
                 else:
-                    request.reply({'status': 'invalid_request', 'reason': 'Invalid status code'})
-            else:
-                request.reply({'status': 'invalid_request', 'reason': 'Status code not found'})
+                    request.reply({'status': 'invalid_request', 'reason': 'Status code not found'})
         else:
             raise RuntimeError('Passed request isn\'t a real request')
 
