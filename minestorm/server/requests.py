@@ -103,8 +103,12 @@ class StartServerProcessor(BaseProcessor):
     require_sid = True
 
     def process(self, request):
-        minestorm.server.instance.servers.get( request.data['server'] ).start()
-        request.reply({'status':'ok'})
+        try:
+            minestorm.server.instance.servers.get( request.data['server'] ).start()
+        except NameError:
+            request.reply({ 'status': 'failed', 'reason': 'Server {} does not exist'.format(request.data['server']) })
+        else:
+            request.reply({'status':'ok'})
 
 class StopServerProcessor(BaseProcessor):
     """
@@ -117,8 +121,12 @@ class StopServerProcessor(BaseProcessor):
     require_sid = True
 
     def process(self, request):
-        minestorm.server.instance.servers.get( request.data['server'] ).stop()
-        request.reply({'status':'ok'})
+        try:
+            minestorm.server.instance.servers.get( request.data['server'] ).stop()
+        except NameError:
+            request.reply({ 'status': 'failed', 'reason': 'Server {} does not exist'.format(request.data['server']) })
+        else:
+            request.reply({'status':'ok'})
 
 class NewSessionProcessor(BaseProcessor):
     """

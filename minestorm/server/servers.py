@@ -44,7 +44,10 @@ class ServersManager:
 
     def get(self, name):
         """ Get a server """
-        return self.servers[name]
+        if name in self.servers:
+            return self.servers[name]
+        else:
+            raise NameError('Server {} not found'.format(name))
 
     def subscribe(self, method, args={}, line_name='line', server_name='server'):
         """ Subscribe for the output """
