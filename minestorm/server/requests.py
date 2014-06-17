@@ -129,7 +129,7 @@ class NewSessionProcessor(BaseProcessor):
 
     def process(self, request):
         sid = minestorm.server.instance.sessions.new("minestorm").sid
-        request.reply({ 'status': 'ok', 'data': { 'sid': sid } })
+        request.reply({ 'status': 'session_created', 'sid': sid })
 
 class RemoveSessionProcessor(BaseProcessor):
     """

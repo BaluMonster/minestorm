@@ -46,8 +46,8 @@ class Session:
         # Request a new sid
         response = self.request({ 'status': 'new_session' })
         # If a new sid was provided
-        if response['status'] == 'ok':
-            self.sid = response['data']['sid'] # Retrieve the sid
+        if response['status'] == 'session_created':
+            self.sid = response['sid'] # Retrieve the sid
         else:
             raise RuntimeError('Unable to get a sid')
 
