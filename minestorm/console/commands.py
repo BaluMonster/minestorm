@@ -42,11 +42,11 @@ class CommandsManager( minestorm.common.BaseManager ):
             # else the name is the command and the arguments is an empty string
             if " " in command:
                 name, arguments = command.split(" ", 1) # Split name and arguments
+                name = name[1:] # Remove starting !
+                arguments = arguments.split(" ")
             else:
-                name = command
-                arguments = ""
-            name = name[1:] # Remove starting !
-            arguments = arguments.split(" ")
+                name = command[1:]
+                arguments = []
             # If the command is registered
             if name in self:
                 result = self[name].execute(arguments) # Execute the command
