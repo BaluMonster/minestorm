@@ -38,7 +38,13 @@ class CommandsManager( minestorm.common.BaseManager ):
         """ Route the command to the correct processor """
         # Command prefix must be !
         if command[0] == "!":
-            name, arguments = command.split(" ", 1) # Split name and arguments
+            # If a space is present in the command split them
+            # else the name is the command and the arguments is an empty string
+            if " " in command:
+                name, arguments = command.split(" ", 1) # Split name and arguments
+            else:
+                name = command
+                arguments = ""
             name = name[1:] # Remove starting !
             arguments = arguments.split(" ")
             # If the command is registered
