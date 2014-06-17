@@ -1,0 +1,25 @@
+{
+    "networking": {
+        "port": 45342,
+        "allow_connections_from": "127.0.0.1"
+    },
+
+    "logging": {
+        "level": "info"
+    },
+
+    "sessions": {
+        "expiration": {
+            "time": 600,
+            "check_every": 30
+        }
+    },
+
+    "servers": {
+        "update_usage_informations_every": 3
+    },
+
+    "available_servers": [
+        
+    ]
+}
