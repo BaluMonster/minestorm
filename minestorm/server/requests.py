@@ -107,6 +107,8 @@ class StartServerProcessor(BaseProcessor):
             minestorm.server.instance.servers.get( request.data['server'] ).start()
         except NameError:
             request.reply({ 'status': 'failed', 'reason': 'Server {} does not exist'.format(request.data['server']) })
+        except RuntimeError as e:
+            request.reply({ 'status': 'failed', 'reason': str(e) })
         else:
             request.reply({'status':'ok'})
 
@@ -125,6 +127,8 @@ class StopServerProcessor(BaseProcessor):
             minestorm.server.instance.servers.get( request.data['server'] ).stop()
         except NameError:
             request.reply({ 'status': 'failed', 'reason': 'Server {} does not exist'.format(request.data['server']) })
+        except RuntimeError as e:
+            request.reply({ 'status': 'failed', 'reason': str(e) })
         else:
             request.reply({'status':'ok'})
 
