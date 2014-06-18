@@ -193,17 +193,22 @@ class CommandProcessor(BaseProcessor):
     def process(self, request):
         sessions = minestorm.server.instance.sessions
         servers = minestorm.server.instance.servers
-        # If the server exists
+        # If the passed server exists pick it
         if 'server' in request.data and request.data['server'] in servers.servers:
             server = servers.get(request.data['server'])
-        else:
+        # Else, if the session has a focused server pick it
+        elif sessions.get(request.data['sid']).focus in servers.servers:
             server = servers.get(sessions.get(request.data['sid']).focus)
+        # Else return an error
+        else:
+            request.reply({ 'status': 'failed', 'reason': 'Please specify a valid server' })
+            return
         # Execute the command only if the server is running
         if server.status == server.STATUS_STARTED:
             server.command( request.data['command'] ) # Execute the command
             request.reply({ 'status': 'ok' })
         else:
-            request.reply({ 'status': 'failed', 'reason': 'Server {} is not running'.format(request.data['server']) })
+            request.reply({ 'status': 'failed', 'reason': 'Server {} is not running'.format(server.details['name']) })
 
 class StatusProcessor(BaseProcessor):
     """
