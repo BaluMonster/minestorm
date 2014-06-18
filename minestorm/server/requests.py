@@ -249,9 +249,12 @@ class UpdateProcessor(BaseProcessor):
             status.append(this)
         # Get the focus
         focus = sessions.get(request.data['sid']).focus
-        # Get used ram
-        ram_used = servers.get(focus).ram
-        if ram_used == None:
+        # Get used ram if a focused server is present
+        if focus != None:
+            ram_used = servers.get(focus).ram
+            if ram_used == None:
+                ram_used = 0
+        else:
             ram_used = 0
         # Prepare result
         result = { 'status': 'updates' }
