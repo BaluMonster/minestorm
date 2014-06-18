@@ -97,6 +97,32 @@ class StreamComponent(BaseComponent):
             chunk = self.lines
         else:
             chunk = self.lines[ (self.position-max_lines) : self.position ]
+        # Split lines into small parts
+        # Needed to avoid lines truncating
+        new_chunk = []
+        for line in chunk:
+            # If the length of the line is greater than the screen size
+            # split the line
+            if len(line) > (self.width - 1):
+                position = 0
+                while 1:
+                    position_max = position + self.width - 1
+                    # If the expected part of the line is lower than the
+                    # total line length add the remaining part and break
+                    # the loop
+                    if position_max > len(line):
+                        new_chunk.append( line[ position: ] )
+                        break
+                    # Else add the expected part
+                    else:
+                        new_chunk.append( line[ position:position_max ] )
+                        position += self.width - 1
+            # If the line length is lower than the stream width
+            # simply add it
+            else:
+                new_chunk.append( line )
+        # Now get only the last part of the chunk
+        chunk = new_chunk[ :max_lines ]
         # Display the chunk
         i = 0
         for line in chunk:
