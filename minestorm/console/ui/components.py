@@ -412,10 +412,13 @@ class InputBarComponent(BaseComponent):
                     # Send command to the backend
                     sid = minestorm.get("console.networking").sid
                     try:
-                        minestorm.get("console.networking").request({ 'status': 'command', 'command': self.content, 'sid': sid })
+                        response = minestorm.get("console.networking").request({ 'status': 'command', 'command': self.content, 'sid': sid })
                     except Exception as e:
                         # If an exception occured display it in the infobar
                         minestorm.get("console.ui").infobar.message("Exception: {!s}".format(e))
+                    # If the request failed and a reason is returned display it
+                    if response['status'] == 'failed' and 'reason' in response:
+                        minestorm.get("console.ui").infobar.message(response['reason'])
             self.content = ""
             self.cursor_position = 0
             self.erase(0)
