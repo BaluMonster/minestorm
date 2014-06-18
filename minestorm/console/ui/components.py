@@ -168,7 +168,6 @@ class SidebarComponent(BaseComponent):
         # Setup boxes
         self.boxes = {}
         self.boxes_ordered = []
-        self.add_box('CPU', True)
         self.add_box('RAM', True)
 
     def add_box(self, name, progress=False, colour='white'):
