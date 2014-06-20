@@ -1,10 +1,5 @@
 #!/usr/bin/python3
-import minestorm.cli
+import minestorm
 
-cli = minestorm.cli.CommandsManager()
-# Register commands
-cli.register( minestorm.cli.StartCommand() )
-cli.register( minestorm.cli.ConsoleCommand() )
-cli.register( minestorm.cli.StatusCommand() )
-
-cli.route()
+minestorm.boot('cli')
+minestorm.get('cli').route()

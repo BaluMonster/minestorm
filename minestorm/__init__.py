@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import sys
+import minestorm._boot
 
 class Container:
     """
@@ -49,9 +50,16 @@ class Container:
 # Create a new instance of the container
 _container = Container()
 
-# Some shortcuts
+# Some shortcuts to the container
 bind = _container.bind
 get = _container.get
 has = _container.has
 remove = _container.remove
 flush = _container.flush
+
+# Setup the booter
+_booter = minestorm._boot.BootManager()
+_booter.register( minestorm._boot.GlobalBooter() )
+_booter.register( minestorm._boot.CliBooter() )
+
+boot = _booter.boot
