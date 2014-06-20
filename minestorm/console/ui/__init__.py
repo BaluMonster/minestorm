@@ -91,6 +91,7 @@ class Console:
             # Set focused server
             if data['focus']:
                 self.sidebar.set_current_server(data['focus'])
+            self.sidebar.set_box_value('RAM', data['ram_used'])
 
     def loop(self):
         """ Main loop """
