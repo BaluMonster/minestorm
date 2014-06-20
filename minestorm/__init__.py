@@ -47,24 +47,11 @@ class Container:
         self._items = {} # Simply remove all
 
 # Create a new instance of the container
-container = Container()
+_container = Container()
 
-def bind(*args, **kwargs):
-    """ Bind an element into the container """
-    return container.bind(*args, **kwargs)
-
-def get(*args, **kwargs):
-    """ Get an element from the container """
-    return container.get(*args, **kwargs)
-
-def has(*args, **kwargs):
-    """ Return true if the key is in the container """
-    return container.has(*args, **kwargs)
-
-def remove(*args, **kwargs):
-    """ Remove the key from the container """
-    return container.remove(*args, **kwargs)
-
-def flush(*args, **kwargs):
-    """ Flush the container removing all the keys """
-    return container.flush(*args, **kwargs)
+# Some shortcuts
+bind = _container.bind
+get = _container.get
+has = _container.has
+remove = _container.remove
+flush = _container.flush
