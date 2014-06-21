@@ -27,6 +27,7 @@ class BaseBooter:
             # If the method starts with the prefix
             if name.startswith(prefix):
                 self._collected_methods.append(func) # Append it to the collected methods list
+        self._collected_methods.sort(key=lambda method: method.__name__) # Sort by method name
 
     def boot(self, manager):
         """ Boot this component """
@@ -45,10 +46,17 @@ class BootManager( minestorm.common.BaseManager ):
     subclass_of = BaseBooter
     resource_name = 'booter'
 
+    def __init__(self):
+        self._booted = []
+        super(BootManager, self).__init__()
+
     def boot(self, component):
         """ Boot a component """
         if component in self:
-            self[component].boot(self)
+            # Check if the component wasn't already booted
+            if component not in self._booted:
+                self[component].boot(self) # Boot it
+                self._booted.append(component)
         else:
             raise KeyError("Component not found: {}".format(component))
 
@@ -58,7 +66,7 @@ class GlobalBooter( BaseBooter ):
     """
     name = 'global'
 
-    def boot_configuration(self):
+    def boot_1_configuration(self):
         """ Boot configuration """
         manager = minestorm.common.configuration.ConfigurationManager()
         minestorm.bind("configuration", manager)
@@ -72,7 +80,7 @@ class CliBooter( BaseBooter ):
     name = 'cli'
     dependencies = ['global']
 
-    def boot_cli(self):
+    def boot_1_cli(self):
         """ Boot the cli """
         manager = minestorm.cli.CommandsManager()
         minestorm.bind("cli", manager)
