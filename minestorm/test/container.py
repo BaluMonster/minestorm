@@ -10,10 +10,6 @@ class ContainerTestCase( unittest.TestCase ):
     def setUp(self):
         self.container = minestorm.Container()
 
-    def tearDown(self):
-        self.container.flush() # Flush the container
-        del self.container
-
     def test_binding_items(self):
         """ Test the bind method """
         # Try to bind something in it
