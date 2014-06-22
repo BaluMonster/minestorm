@@ -43,15 +43,12 @@ class ContainerTestCase( unittest.TestCase ):
         """ Test remove method """
         # Add some stuff
         self.container.bind('test1', 'hello')
-        self.container.bind('test2', 'bye')
         # Try to remove an existing item
-        self.container.remove('test2')
-        self.assertFalse( self.container.has('test2') )
+        self.container.remove('test1')
+        self.assertFalse( self.container.has('test1') )
         # Try to remove a non-existing item
         with self.assertRaises( KeyError ):
-            self.container.remove('test3')
-        # Test removing one item doesn't remove another item
-        self.assertTrue( self.container.has('test1') )
+            self.container.remove('test2')
 
     def test_has_items(self):
         """ Test has method """
