@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 from argparse import ArgumentParser
-import minestorm.server
 import minestorm.console
 import curses
 
@@ -65,7 +64,8 @@ class StartCommand(Command):
         parser.add_argument('-c', '--conf', help='specify the configuration file path', default='minestorm.json', metavar='PATH', dest='config')
 
     def run(self, args):
-        server = minestorm.server.MinestormServer(args.config)
+        minestorm.boot('server')
+        minestorm.get('server').start()
 
 class ConsoleCommand(Command):
     """

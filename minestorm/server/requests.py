@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import logging
+import minestorm
 import minestorm.server.networking
-import minestorm.server
 
 class RequestSorter:
     """
@@ -59,18 +59,17 @@ class BaseProcessor:
 
     def _process(self, request):
         """ Procesor entry point """
-        sessions = minestorm.server.instance.sessions
         # Check if sid is required but not passed
         if self.require_sid and 'sid' not in request.data:
             request.reply({'status': 'failed', 'reason': 'SID not provided'})
         # Check if the sid is required but invalid (badly formatted or expired or never created)
-        elif self.require_sid and not sessions.is_valid( request.data['sid'] ):
+        elif self.require_sid and not minestorm.get('server.sessions').is_valid( request.data['sid'] ):
             request.reply({'status': 'failed', 'reason': 'Invalid SID'})
         else:
             # If a SID was provided, touch the relative session
             # to avoid expiration of it
-            if 'sid' in request.data and sessions.is_valid( request.data['sid'] ):
-                sessions.get( request.data['sid'] ).touch()
+            if 'sid' in request.data and minestorm.get('server.sessions').is_valid( request.data['sid'] ):
+                minestorm.get('server.sessions').get( request.data['sid'] ).touch()
             self.process(request)
 
     def process(self, request):
@@ -104,7 +103,7 @@ class StartServerProcessor(BaseProcessor):
 
     def process(self, request):
         try:
-            minestorm.server.instance.servers.get( request.data['server'] ).start()
+            minestorm.get('server.servers').get( request.data['server'] ).start()
         except NameError:
             request.reply({ 'status': 'failed', 'reason': 'Server {} does not exist'.format(request.data['server']) })
         except RuntimeError as e:
@@ -124,7 +123,7 @@ class StopServerProcessor(BaseProcessor):
 
     def process(self, request):
         try:
-            minestorm.server.instance.servers.get( request.data['server'] ).stop()
+            minestorm.get('server.servers').get( request.data['server'] ).stop()
         except NameError:
             request.reply({ 'status': 'failed', 'reason': 'Server {} does not exist'.format(request.data['server']) })
         except RuntimeError as e:
@@ -142,7 +141,7 @@ class NewSessionProcessor(BaseProcessor):
     name = 'new_session'
 
     def process(self, request):
-        sid = minestorm.server.instance.sessions.new("minestorm").sid
+        sid = minestorm.get('server.sessions').new("minestorm").sid
         request.reply({ 'status': 'session_created', 'sid': sid })
 
 class RemoveSessionProcessor(BaseProcessor):
@@ -156,8 +155,7 @@ class RemoveSessionProcessor(BaseProcessor):
     require_sid = True
 
     def process(self, request):
-        sessions = minestorm.server.instance.sessions
-        sessions.remove( request.data['sid'] ) # Remove the session
+        minestorm.get('server.sessions').remove( request.data['sid'] ) # Remove the session
         request.reply({ 'status': 'ok' })
 
 class ChangeFocusProcessor(BaseProcessor):
@@ -171,11 +169,9 @@ class ChangeFocusProcessor(BaseProcessor):
     require_sid = True
 
     def process(self, request):
-        sessions = minestorm.server.instance.sessions
-        servers = minestorm.server.instance.servers
         # Check if the session exists
-        if request.data['server'] in servers.servers:
-            sessions.get(request.data['sid']).change_focus(request.data['server']) # Change the focus
+        if request.data['server'] in minestorm.get('servers').servers:
+            minestorm.get('server.sessions').get(request.data['sid']).change_focus(request.data['server']) # Change the focus
             request.reply({ 'status': 'ok' })
         else:
             request.reply({ 'status': 'failed', 'reason': 'Unknow server: {}'.format(request.data['server']) })
@@ -191,14 +187,12 @@ class CommandProcessor(BaseProcessor):
     require_sid = True
 
     def process(self, request):
-        sessions = minestorm.server.instance.sessions
-        servers = minestorm.server.instance.servers
         # If the passed server exists pick it
-        if 'server' in request.data and request.data['server'] in servers.servers:
-            server = servers.get(request.data['server'])
+        if 'server' in request.data and request.data['server'] in minestorm.get('server.servers').servers:
+            server = minestorm.get('server.servers').get(request.data['server'])
         # Else, if the session has a focused server pick it
-        elif sessions.get(request.data['sid']).focus in servers.servers:
-            server = servers.get(sessions.get(request.data['sid']).focus)
+        elif minestorm.get('server.sessions').get(request.data['sid']).focus in minestorm.get('server.servers').servers:
+            server = minestorm.get('server.servers').get(minestorm.get('server.sessions').get(request.data['sid']).focus)
         # Else return an error
         else:
             request.reply({ 'status': 'failed', 'reason': 'Please specify a valid server' })
@@ -221,8 +215,7 @@ class StatusProcessor(BaseProcessor):
     require_sid = True
 
     def process(self, request):
-        servers = minestorm.server.instance.servers
-        request.reply({ 'status': 'status_response', 'servers': servers.status() })
+        request.reply({ 'status': 'status_response', 'servers': minestorm.get('server.servers').status() })
 
 class UpdateProcessor(BaseProcessor):
     """
@@ -235,23 +228,21 @@ class UpdateProcessor(BaseProcessor):
     require_sid = True
 
     def process(self, request):
-        sessions = minestorm.server.instance.sessions
-        servers = minestorm.server.instance.servers
         # Get new lines
         new_lines = sessions.get(request.data['sid']).new_lines
-        sessions.get(request.data['sid']).new_lines = []
+        minestorm.get('server.sessions').get(request.data['sid']).new_lines = []
         # Get server status
         status = []
-        for name, server in servers.status().items():
+        for name, server in minestorm.get('server.servers').status().items():
             this = {}
             this['name'] = name
-            this['online'] = server['status'] in ( servers.get(name).STATUS_STARTING, servers.get(name).STATUS_STARTED, servers.get(name).STATUS_STOPPING )
+            this['online'] = server['status'] in ( 'STARTING', 'STARTED', 'STOPPING' )
             status.append(this)
         # Get the focus
-        focus = sessions.get(request.data['sid']).focus
+        focus = minestorm.get('server.sessions').get(request.data['sid']).focus
         # Get used ram if a focused server is present
         if focus != None:
-            ram_used = servers.get(focus).ram
+            ram_used = minestorm.get('servers').get(focus).ram
             if ram_used == None:
                 ram_used = 0
         else:

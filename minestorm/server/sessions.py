@@ -3,7 +3,7 @@ import logging
 import uuid
 import time
 import threading
-import minestorm.server
+import minestorm
 
 class SessionsManager:
     """
@@ -38,7 +38,7 @@ class SessionsManager:
     def is_valid(self, sid):
         """ Check if a SID is valid """
         # Get the expiration time
-        expire_at = time.time() - minestorm.server.instance.configuration['sessions']['expiration']['time']
+        expire_at = time.time() - minestorm.get('configuration').get('sessions.expiration.time')
         # First check if the SID exists
         if sid in self.sessions:
             # Now check if it isn't expired
@@ -115,4 +115,4 @@ class SessionsClearerThread(threading.Thread):
         while not self.stop:
             self.manager.clear()
             # Go to the bed!
-            time.sleep( minestorm.server.instance.configuration['sessions']['expiration']['check_every'] )
+            time.sleep( minestorm.get('configuration').get('sessions.expiration.check_every') )

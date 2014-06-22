@@ -4,7 +4,7 @@ import threading
 import os
 import logging
 import time
-import minestorm.server
+import minestorm
 
 class ServersManager:
     """ Manager of all servers """
@@ -302,4 +302,4 @@ class UsageInformationsUpdater(threading.Thread):
             # Call the server _update_resource_usage method
             self.server._update_resource_usage()
             # Now sleep a little
-            time.sleep( minestorm.server.instance.configuration['servers']['update_usage_informations_every'] )
+            time.sleep( minestorm.get('configuration').get('servers.update_usage_informations_every') )

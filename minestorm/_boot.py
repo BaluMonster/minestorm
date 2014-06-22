@@ -1,9 +1,15 @@
 #!/usr/bin/python3
 import inspect
+import logging
 import minestorm
 import minestorm.common
 import minestorm.common.configuration
 import minestorm.cli
+import minestorm.server
+import minestorm.server.networking
+import minestorm.server.requests
+import minestorm.server.servers
+import minestorm.server.sessions
 
 class BaseBooter:
     """
@@ -88,3 +94,69 @@ class CliBooter( BaseBooter ):
         manager.register( minestorm.cli.StartCommand() )
         manager.register( minestorm.cli.ConsoleCommand() )
         manager.register( minestorm.cli.StatusCommand() )
+
+class ServerBooter( BaseBooter ):
+    """
+    Class which boot minestorm server
+    """
+    name = 'server'
+    dependencies = ['global']
+
+    def boot_1_logging(self):
+        """ Boot the logging system """
+        logger = logging.getLogger('minestorm')
+        # Get the logging level
+        level = getattr( logging, str(minestorm.get('configuration').get('logging.level')).upper() )
+        logger.setLevel( level )
+        # Prepare the formatter
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        # Set the stream handler
+        stream = logging.StreamHandler()
+        stream.setLevel( level )
+        stream.setFormatter( formatter )
+        # Register all
+        logger.addHandler( stream )
+
+    def boot_2_networking(self):
+        """ Boot the networking """
+        manager = minestorm.server.networking.Listener()
+        minestorm.bind('server.networking', manager)
+        # Bind the console port
+        manager.bind( minestorm.get('configuration').get('networking.port') )
+
+    def boot_3_requests(self):
+        """ Boot the requests parser """
+        manager = minestorm.server.requests.RequestSorter()
+        minestorm.bind('server.requests', manager)
+        # Register differend requests
+        manager.register( minestorm.server.requests.PingProcessor )
+        manager.register( minestorm.server.requests.NewSessionProcessor )
+        manager.register( minestorm.server.requests.RemoveSessionProcessor )
+        manager.register( minestorm.server.requests.ChangeFocusProcessor )
+        manager.register( minestorm.server.requests.StartServerProcessor )
+        manager.register( minestorm.server.requests.StopServerProcessor )
+        manager.register( minestorm.server.requests.CommandProcessor )
+        manager.register( minestorm.server.requests.StatusProcessor )
+        manager.register( minestorm.server.requests.UpdateProcessor )
+        # Subscribe for new requests
+        minestorm.get('server.networking').subscribe( manager.sort, {}, 'request' )
+
+    def boot_4_servers(self):
+        """ Boot the servers manager """
+        manager = minestorm.server.servers.ServersManager()
+        minestorm.bind('server.servers', manager)
+        # Register all servers
+        for section in minestorm.get('configuration').get('available_servers'):
+            manager.register( section ) # Register the server
+
+    def boot_5_sessions(self):
+        """ Boot the sessions manager """
+        manager = minestorm.server.sessions.SessionsManager()
+        minestorm.bind('server.sessions', manager)
+        # Subscribe for output lines
+        minestorm.get('server.servers').subscribe(manager.add_line, {}, 'line', 'server')
+
+    def boot_6_manager(self):
+        """ Boot the server manager """
+        manager = minestorm.server.MinestormServer()
+        minestorm.bind('server', manager)

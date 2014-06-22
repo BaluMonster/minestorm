@@ -61,5 +61,6 @@ flush = _container.flush
 _booter = minestorm._boot.BootManager()
 _booter.register( minestorm._boot.GlobalBooter() )
 _booter.register( minestorm._boot.CliBooter() )
+_booter.register( minestorm._boot.ServerBooter() )
 
 boot = _booter.boot
