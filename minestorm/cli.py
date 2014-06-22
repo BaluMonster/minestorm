@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from argparse import ArgumentParser
 import minestorm.console
+import minestorm.test
 import curses
 
 class CommandsManager:
@@ -90,3 +91,13 @@ class StatusCommand(Command):
 
     def run(self, args):
         pass
+
+class TestCommand(Command):
+    """
+    Command which run unit tests
+    """
+    name = 'test'
+    description = 'run unit tests'
+
+    def run(self, args):
+        minestorm.test.run()

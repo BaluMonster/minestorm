@@ -94,6 +94,7 @@ class CliBooter( BaseBooter ):
         manager.register( minestorm.cli.StartCommand() )
         manager.register( minestorm.cli.ConsoleCommand() )
         manager.register( minestorm.cli.StatusCommand() )
+        manager.register( minestorm.cli.TestCommand() )
 
 class ServerBooter( BaseBooter ):
     """
