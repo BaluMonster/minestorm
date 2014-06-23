@@ -3,6 +3,7 @@ import socket
 import json
 import threading
 import logging
+import minestorm
 
 class Listener:
     """
@@ -120,7 +121,7 @@ class ListenerThread(threading.Thread):
 
     def run(self):
         # Stop the loop putting self.stop to false
-        while not self.stop:
+        while not ( self.stop or minestorm.shutdowned ):
             try:
                 conn, addr = self.listener.socket.accept() # Accept a connection
                 data = conn.recv( 4096 ) # Recive the request

@@ -298,7 +298,7 @@ class UsageInformationsUpdater(threading.Thread):
         self.stop = False
 
     def run(self):
-        while not self.stop:
+        while not ( self.stop or minestorm.shutdowned ):
             # Call the server _update_resource_usage method
             self.server._update_resource_usage()
             # Now sleep a little

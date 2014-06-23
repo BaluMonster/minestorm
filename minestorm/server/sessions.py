@@ -112,7 +112,7 @@ class SessionsClearerThread(threading.Thread):
         super(SessionsClearerThread, self).__init__()
 
     def run(self):
-        while not self.stop:
+        while not ( self.stop or minestorm.shutdowned ):
             self.manager.clear()
             # Go to the bed!
             time.sleep( minestorm.get('configuration').get('sessions.expiration.check_every') )

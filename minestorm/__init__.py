@@ -60,6 +60,7 @@ def register_shutdown_function(function):
 
 def shutdown(code=0):
     """ Shutdown minestorm """
+    global shutdowned
     # Execute all shutdown functions
     for function in _shutdown_functions:
         function()
