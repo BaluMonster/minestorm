@@ -274,7 +274,7 @@ class OutputWatcher(threading.Thread):
         self.stop = False
 
     def run(self):
-        while not self.stop:
+        while not ( self.stop or minestorm.shutdowned ):
             # Get a char from the stdout of the server
             # and convert it to string
             char = self.server.pipes['out'].read(1)
