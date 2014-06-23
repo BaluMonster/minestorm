@@ -18,4 +18,4 @@ class MinestormServer:
         logging.getLogger('minestorm').info('Shutting down minestorm...')
         minestorm.get('server.networking').stop() # Stop the networking and close the port
         minestorm.get('server.servers').stop_all() # Stop all servers
-        logging.getLogger('minestorm').info('Bye!')
+        logging.getLogger('minestorm').info('Waiting for threads shutdown...')
