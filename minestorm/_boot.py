@@ -167,3 +167,5 @@ class ServerBooter( BaseBooter ):
         """ Boot the server manager """
         manager = minestorm.server.MinestormServer()
         minestorm.bind('server', manager)
+        # Register shutdown function
+        minestorm.register_shutdown_function( manager.shutdown )
