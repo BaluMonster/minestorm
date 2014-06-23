@@ -32,14 +32,14 @@ class ServersManager:
         """ Start all servers """
         for name, server in self.servers.items():
             # Start the server only if it isn't already started
-            if server.status in (self.STATUS_STOPPED, self.STATUS_CRASHED):
+            if server.status in (server.STATUS_STOPPED, server.STATUS_CRASHED):
                 server.start()
 
     def stop_all(self):
         """ Stop all servers """
         for name, server in self.servers.items():
             # Stop the server only if it's started
-            if server.status == self.STATUS_STARTED:
+            if server.status == server.STATUS_STARTED:
                 server.stop()
 
     def get(self, name):
