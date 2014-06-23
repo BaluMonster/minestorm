@@ -4,6 +4,7 @@ import logging
 import minestorm
 import minestorm.common
 import minestorm.common.configuration
+import minestorm.common.resources
 import minestorm.cli
 import minestorm.server
 import minestorm.server.networking
@@ -78,6 +79,11 @@ class GlobalBooter( BaseBooter ):
         minestorm.bind("configuration", manager)
         # Load configuration
         manager.load("minestorm.json")
+
+    def boot_2_resources(self):
+        """ Boot the resources manager """
+        manager = minestorm.common.resources.ResourcesManager()
+        minestorm.bind("resources", manager)
 
 class CliBooter( BaseBooter ):
     """
