@@ -170,7 +170,7 @@ class ChangeFocusProcessor(BaseProcessor):
 
     def process(self, request):
         # Check if the session exists
-        if request.data['server'] in minestorm.get('servers').servers:
+        if request.data['server'] in minestorm.get('server.servers').servers:
             minestorm.get('server.sessions').get(request.data['sid']).change_focus(request.data['server']) # Change the focus
             request.reply({ 'status': 'ok' })
         else:
@@ -229,7 +229,7 @@ class UpdateProcessor(BaseProcessor):
 
     def process(self, request):
         # Get new lines
-        new_lines = sessions.get(request.data['sid']).new_lines
+        new_lines = minestorm.get('server.sessions').get(request.data['sid']).new_lines
         minestorm.get('server.sessions').get(request.data['sid']).new_lines = []
         # Get server status
         status = []
