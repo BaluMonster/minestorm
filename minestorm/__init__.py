@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import sys
+import signal
 import minestorm._boot
 
 class Container:
@@ -58,14 +59,20 @@ def register_shutdown_function(function):
     else:
         raise RuntimeError('Passed argument must be callable')
 
-def shutdown(code=0):
+def shutdown():
     """ Shutdown minestorm """
     global shutdowned
     # Execute all shutdown functions
     for function in _shutdown_functions:
         function()
     shutdowned = True
-    exit(code)
+
+# Shutdown correctly when SIGINT is recived
+def stop_handler(*args):
+    """ Called when SIGINT is sent """
+    shutdown()
+
+signal.signal(signal.SIGINT, stop_handler)
 
 # Create a new instance of the container
 _container = Container()
