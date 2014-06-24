@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import socket
+import curses
 import minestorm
 import minestorm.console.networking
 import minestorm.console.ui
@@ -42,5 +43,12 @@ class MinestormConsole:
 
     def start(self):
         """ Start the console """
+        minestorm.register_shutdown_function(self.shutdown)
         minestorm.get("console.networking.updater").start()
         minestorm.get("console.ui").loop()
+
+    def shutdown(self):
+        """ Stop the console """
+        minestorm.get("console.networking.updater").stop = True
+        minestorm.get("console.ui").stop = True
+        curses.endwin()

@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import sys
+import signal
 import minestorm._boot
 
 class Container:
@@ -46,6 +47,32 @@ class Container:
     def flush(self):
         """ Flush the container removing all the keys """
         self._items = {} # Simply remove all
+
+_shutdown_functions = []
+shutdowned = False
+
+def register_shutdown_function(function):
+    """ Register a function which will be executed at shutdown """
+    # Accept only callable things
+    if callable(function):
+        _shutdown_functions.append(function)
+    else:
+        raise RuntimeError('Passed argument must be callable')
+
+def shutdown():
+    """ Shutdown minestorm """
+    global shutdowned
+    # Execute all shutdown functions
+    for function in _shutdown_functions:
+        function()
+    shutdowned = True
+
+# Shutdown correctly when SIGINT is recived
+def stop_handler(*args):
+    """ Called when SIGINT is sent """
+    shutdown()
+
+signal.signal(signal.SIGINT, stop_handler)
 
 # Create a new instance of the container
 _container = Container()

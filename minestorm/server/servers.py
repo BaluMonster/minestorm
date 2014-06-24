@@ -32,14 +32,14 @@ class ServersManager:
         """ Start all servers """
         for name, server in self.servers.items():
             # Start the server only if it isn't already started
-            if server.status in (self.STATUS_STOPPED, self.STATUS_CRASHED):
+            if server.status in (server.STATUS_STOPPED, server.STATUS_CRASHED):
                 server.start()
 
     def stop_all(self):
         """ Stop all servers """
         for name, server in self.servers.items():
             # Stop the server only if it's started
-            if server.status == self.STATUS_STARTED:
+            if server.status == server.STATUS_STARTED:
                 server.stop()
 
     def get(self, name):
@@ -274,7 +274,7 @@ class OutputWatcher(threading.Thread):
         self.stop = False
 
     def run(self):
-        while not self.stop:
+        while not ( self.stop or minestorm.shutdowned ):
             # Get a char from the stdout of the server
             # and convert it to string
             char = self.server.pipes['out'].read(1)
@@ -298,7 +298,7 @@ class UsageInformationsUpdater(threading.Thread):
         self.stop = False
 
     def run(self):
-        while not self.stop:
+        while not ( self.stop or minestorm.shutdowned ):
             # Call the server _update_resource_usage method
             self.server._update_resource_usage()
             # Now sleep a little

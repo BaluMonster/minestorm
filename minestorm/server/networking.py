@@ -3,6 +3,7 @@ import socket
 import json
 import threading
 import logging
+import minestorm
 
 class Listener:
     """
@@ -45,17 +46,17 @@ class Listener:
     def stop(self):
         """ Stop the listener """
         if self.started == True or self.binded == True:
+            # Reset variables
+            self.binded = False
+            self.started = False
             # Stop the thread if it was started
             if self.thread:
                 self.thread.stop = True
                 self.thread = None
             # Shutdown the socket
-            self.socket.shutdown()
+            self.socket.shutdown(socket.SHUT_RDWR)
             self.socket.close()
             self.socket = None
-            # Reset variables
-            self.binded = False
-            self.started = False
             self.logger.info('Networking stopped!')
         else:
             raise RuntimeError('Can\'t stop a stopped server...')
@@ -120,7 +121,12 @@ class ListenerThread(threading.Thread):
 
     def run(self):
         # Stop the loop putting self.stop to false
-        while not self.stop:
-            conn, addr = self.listener.socket.accept() # Accept a connection
-            data = conn.recv( 4096 ) # Recive the request
-            self.listener._on_request_recived(conn, addr, data) # Pass the request to the listener
+        while not ( self.stop or minestorm.shutdowned ):
+            try:
+                conn, addr = self.listener.socket.accept() # Accept a connection
+                data = conn.recv( 4096 ) # Recive the request
+                self.listener._on_request_recived(conn, addr, data) # Pass the request to the listener
+            except socket.error:
+                if self.listener.started:
+                    logging.getLogger('minestorm.networking').critical('Socket broken')
+                break
