@@ -242,7 +242,7 @@ class UpdateProcessor(BaseProcessor):
         focus = minestorm.get('server.sessions').get(request.data['sid']).focus
         # Get used ram if a focused server is present
         if focus != None:
-            ram_used = minestorm.get('servers').get(focus).ram
+            ram_used = minestorm.get('server.servers').get(focus).ram
             if ram_used == None:
                 ram_used = 0
         else:
