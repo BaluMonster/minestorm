@@ -110,3 +110,27 @@ class Resource:
 
     def __contains__(self, name):
         return name in self._objects
+
+class ResourceWrapper:
+    """
+    Wrapper to be extended for a resource
+    """
+
+    def __init__(self):
+        manager = minestorm.get("resources")
+        self._resource = manager.get( self.resource )
+        # Register aliases
+        for func in ('register', 'unregister', 'flush', 'has', 'get'):
+            setattr(self, func, getattr(self._resource, func))
+
+    def __len__(self, *args, **kwargs):
+        return self._resource.__len__(*args, **kwargs)
+
+    def __getitem__(self, *args, **kwargs):
+        return self._resource.__getitem__(*args, **kwargs)
+
+    def __iter__(self, *args, **kwargs):
+        return self._resource.__iter__(*args, **kwargs)
+
+    def __contains__(self, *args, **kwargs):
+        return self._resource.__contains__(*args, **kwargs)
