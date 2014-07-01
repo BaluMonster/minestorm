@@ -94,6 +94,13 @@ class CliBooter( BaseBooter ):
 
     def boot_1_cli(self):
         """ Boot the cli """
+        # Setup the resource
+        validator = lambda resource: resource.name != '__base__'
+        minestorm.get('resources').add('cli.commands',
+                                       subclass_of = minestorm.cli.Command,
+                                       name_attribute = 'name',
+                                       validator = validator )
+        # Setup the manager
         manager = minestorm.cli.CommandsManager()
         minestorm.bind("cli", manager)
         # Register commands
