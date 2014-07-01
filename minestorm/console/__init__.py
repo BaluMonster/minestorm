@@ -35,6 +35,13 @@ class MinestormConsole:
 
     def _init_commands(self):
         """ Initialize the console manager """
+        # Setup the resource
+        validator = lambda resource: resource.name != '__base__'
+        minestorm.get('resources').add('console.commands',
+                                       subclass_of = minestorm.console.commands.Command,
+                                       name_attribute = 'name',
+                                       validator = validator )
+        # Setup the manager
         commands = minestorm.console.commands.CommandsManager()
         commands.register( minestorm.console.commands.SwitchCommand() )
         commands.register( minestorm.console.commands.StartCommand() )
