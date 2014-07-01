@@ -94,6 +94,13 @@ class CliBooter( BaseBooter ):
 
     def boot_1_cli(self):
         """ Boot the cli """
+        # Setup the resource
+        validator = lambda resource: resource.name != '__base__'
+        minestorm.get('resources').add('cli.commands',
+                                       subclass_of = minestorm.cli.Command,
+                                       name_attribute = 'name',
+                                       validator = validator )
+        # Setup the manager
         manager = minestorm.cli.CommandsManager()
         minestorm.bind("cli", manager)
         # Register commands
@@ -133,18 +140,25 @@ class ServerBooter( BaseBooter ):
 
     def boot_3_requests(self):
         """ Boot the requests parser """
+        # Setup the resource
+        validator = lambda resource: resource.name != '__base__'
+        minestorm.get('resources').add('server.request_processors',
+                                       subclass_of = minestorm.server.requests.BaseProcessor,
+                                       name_attribute = 'name',
+                                       validator = validator )
+        # Create the sorter
         manager = minestorm.server.requests.RequestSorter()
         minestorm.bind('server.requests', manager)
         # Register differend requests
-        manager.register( minestorm.server.requests.PingProcessor )
-        manager.register( minestorm.server.requests.NewSessionProcessor )
-        manager.register( minestorm.server.requests.RemoveSessionProcessor )
-        manager.register( minestorm.server.requests.ChangeFocusProcessor )
-        manager.register( minestorm.server.requests.StartServerProcessor )
-        manager.register( minestorm.server.requests.StopServerProcessor )
-        manager.register( minestorm.server.requests.CommandProcessor )
-        manager.register( minestorm.server.requests.StatusProcessor )
-        manager.register( minestorm.server.requests.UpdateProcessor )
+        manager.register( minestorm.server.requests.PingProcessor() )
+        manager.register( minestorm.server.requests.NewSessionProcessor() )
+        manager.register( minestorm.server.requests.RemoveSessionProcessor() )
+        manager.register( minestorm.server.requests.ChangeFocusProcessor() )
+        manager.register( minestorm.server.requests.StartServerProcessor() )
+        manager.register( minestorm.server.requests.StopServerProcessor() )
+        manager.register( minestorm.server.requests.CommandProcessor() )
+        manager.register( minestorm.server.requests.StatusProcessor() )
+        manager.register( minestorm.server.requests.UpdateProcessor() )
         # Subscribe for new requests
         minestorm.get('server.networking').subscribe( manager.sort, {}, 'request' )
 
