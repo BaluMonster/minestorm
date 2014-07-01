@@ -3,6 +3,10 @@ from argparse import ArgumentParser
 import minestorm.console
 import minestorm.test
 import curses
+import socket
+import json
+import time
+import datetime
 
 class CommandsManager:
     def __init__(self):
@@ -54,6 +58,26 @@ class Command:
         """ Run the command """
         pass
 
+    def request(self, data):
+        """ Make a request to the server """
+        try:
+            # Try to connect
+            s = socket.socket()
+            s.connect(( socket.gethostname(), minestorm.get('configuration').get('networking.port') ))
+        except socket.error:
+            # if an error occured return none
+            return
+        else:
+            # Send the request
+            s.send(json.dumps(data).encode('utf-8'))
+            # Receive response
+            raw = s.recv(4096).decode('utf-8')
+            response = json.loads(raw)
+            # Shutdown the socket
+            s.shutdown(socket.SHUT_RD)
+            s.close()
+            return response
+
 class StartCommand(Command):
     """
     Command which start minestorm server
@@ -84,13 +108,35 @@ class ConsoleCommand(Command):
 
 class StatusCommand(Command):
     """
-    Command which start the console
+    Command which check the status of minestorm
     """
     name = 'status'
     description = 'see minestorm status'
 
     def run(self, args):
-        pass
+        # Try to get a session id
+        sid_request = self.request({ 'status': 'new_session' })
+        # If the server is online
+        if sid_request:
+            status = self.request({ 'status': 'status', 'sid': sid_request['sid'] })
+            # Display the header
+            print('Name'.ljust(15), 'Status'.ljust(10), 'Started at'.ljust(16), 'RAM'.ljust(8), 'Uptime', sep="")
+            print('-'*79)
+            # Display informations about servers
+            for name, details in status['servers'].items():
+                # Get basic informations about it
+                status = details['status']
+                # If the server is running display more informations about it
+                if details['status'] in ('STARTING', 'STARTED', 'STOPPING'):
+                    started_at = time.strftime("%D %H:%M", time.localtime(details['started_at'])) # Prepare started at
+                    ram = str( round(details['ram_used'], 2) )+'%'
+                    uptime = datetime.timedelta(seconds=details['uptime'])
+                else:
+                    started_at, ram, uptime = '-', '-', '-'
+                # Display informations
+                print(name.ljust(15), status.ljust(10), started_at.ljust(16), ram.ljust(8), uptime, sep="")
+        else:
+            print('Minestorm is currently stopped')
 
 class TestCommand(Command):
     """
