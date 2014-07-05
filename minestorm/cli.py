@@ -99,6 +99,54 @@ class ConsoleCommand(Command):
         finally:
             curses.endwin()
 
+class StartCommand(Command):
+    """
+    Command which start a server
+    """
+    name = 'start'
+    description = 'start a server'
+
+    def boot(self, parser):
+        parser.add_argument('server', help='choose which server start')
+
+    def run(self, args):
+        # Try to get a session id
+        sid_request = self.request({ 'status': 'new_session' })
+        # If the server is online
+        if sid_request:
+            # Try to start the server
+            request = self.request({ 'status': 'start_server', 'server': args.server, 'sid': sid_request['sid'] })
+            if request['status'] == 'failed':
+                print('Error: {}'.format(request['reason']), f=sys.stderr)
+                exit(1)
+        else:
+            print('Error: can\'t reach the server', f=sys.stderr)
+            exit(1)
+
+class StopCommand(Command):
+    """
+    Command which stop a server
+    """
+    name = 'stop'
+    description = 'stop a server'
+
+    def boot(self, parser):
+        parser.add_argument('server', help='choose which server stop')
+
+    def run(self, args):
+        # Try to get a session id
+        sid_request = self.request({ 'status': 'new_session' })
+        # If the server is online
+        if sid_request:
+            # Try to stop the server
+            request = self.request({ 'status': 'stop_server', 'server': args.server, 'sid': sid_request['sid'] })
+            if request['status'] == 'failed':
+                print('Error: {}'.format(request['reason']), f=sys.stderr)
+                exit(1)
+        else:
+            print('Error: can\'t reach the server', f=sys.stderr)
+            exit(1)
+
 class StatusCommand(Command):
     """
     Command which check the status of minestorm
