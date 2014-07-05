@@ -1,6 +1,34 @@
 #!/usr/bin/python3
 import minestorm
-import minestorm.common
+import minestorm.common.resources
+
+class CommandsManager( minestorm.common.resources.ResourceWrapper ):
+    """
+    Class which manage all minestorm console commands
+    """
+    resource = 'console.commands'
+
+    def route(self, command):
+        """ Route the command to the correct processor """
+        # Command prefix must be !
+        if command[0] == "!":
+            # If a space is present in the command split them
+            # else the name is the command and the arguments is an empty string
+            if " " in command:
+                name, arguments = command.split(" ", 1) # Split name and arguments
+                name = name[1:] # Remove starting !
+                arguments = arguments.split(" ")
+            else:
+                name = command[1:]
+                arguments = []
+            # If the command is registered
+            if name in self:
+                result = self[name].execute(arguments) # Execute the command
+                return result
+            else:
+                return 'Command {} not found'.format(name)
+        else:
+            return 'Invalid commmand'
 
 class Command:
     """
@@ -26,35 +54,6 @@ class Command:
     def execute(self, arguments):
         """ Execute the command """
         pass
-
-class CommandsManager( minestorm.common.BaseManager ):
-    """
-    Class which manage all minestorm console commands
-    """
-    subclass_of = Command
-    resource_name = 'command'
-
-    def route(self, command):
-        """ Route the command to the correct processor """
-        # Command prefix must be !
-        if command[0] == "!":
-            # If a space is present in the command split them
-            # else the name is the command and the arguments is an empty string
-            if " " in command:
-                name, arguments = command.split(" ", 1) # Split name and arguments
-                name = name[1:] # Remove starting !
-                arguments = arguments.split(" ")
-            else:
-                name = command[1:]
-                arguments = []
-            # If the command is registered
-            if name in self:
-                result = self[name].execute(arguments) # Execute the command
-                return result
-            else:
-                return 'Command {} not found'.format(name)
-        else:
-            return 'Invalid commmand'
 
 class SwitchCommand(Command):
     """

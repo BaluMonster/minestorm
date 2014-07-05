@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 from argparse import ArgumentParser
+import minestorm.common.resources
 import minestorm.console
 import minestorm.test
 import sys
@@ -9,27 +10,18 @@ import json
 import time
 import datetime
 
-class CommandsManager:
-    def __init__(self):
-        """ Initalize commands manager """
-        self.commands = {}
-
-    def register(self, command):
-        """ Register a new command """
-        if issubclass(command.__class__, Command): # Accept only subclasses of Command
-            if command.name != '__base__' and command.name not in self.commands: # Prevent registering of __base__ command or duplicates
-                self.commands[command.name] = command # Register the command
-            else:
-                raise RuntimeError('Invalid command')
-        else:
-            raise RuntimeError('Invalid command')
+class CommandsManager( minestorm.common.resources.ResourceWrapper ):
+    """
+    This class manages all cli commands
+    """
+    resource = 'cli.commands'
 
     def prepare_parser(self):
         """ Prepare the arguments parser """
         parser = ArgumentParser() # Initialize a new ArgumentParser instance
         subs = parser.add_subparsers(help='commands', dest='command') # Initialize the subparser for the main command
-        for command in self.commands.values():
-            sub = subs.add_parser(command.name, help=command.description) # Register the command
+        for name, command in self:
+            sub = subs.add_parser(name, help=command.description) # Register the command
             command.boot(sub) # Allow command customization
         return parser
 
@@ -37,7 +29,7 @@ class CommandsManager:
         """ "Route" a call into the right command """
         parser = self.prepare_parser() # Get the parser
         args = parser.parse_args() # Parse the arguments
-        self.commands[args.command].run(args) # Run the command
+        self[args.command].run(args) # Run the command
 
 class Command:
     name = '__base__'

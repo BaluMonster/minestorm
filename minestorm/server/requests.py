@@ -2,26 +2,19 @@
 import logging
 import minestorm
 import minestorm.server.networking
+import minestorm.common.resources
 
-class RequestSorter:
+class RequestSorter( minestorm.common.resources.ResourceWrapper ):
     """
     This class manage the request sorter
     by the status code
     """
+    resource = "server.request_processors"
 
     def __init__(self):
+        super(RequestSorter, self).__init__()
         self.processors = {} # Initialize processors
         self.logger = logging.getLogger('minestorm.request')
-
-    def register(self, processor):
-        """ Register a new processor """
-        # Don't insert duplicates
-        if processor.name not in self.processors:
-            # Register the processor
-            self.processors[processor.name] = processor()
-            self.logger.debug('Registered network processor for "{0}"'.format( processor.name ))
-        else:
-            raise RuntimeError('Processor {0} already registered'.format(processor.name))
 
     def sort(self, request):
         """ Sort a request and pass it to the right processor """
@@ -32,9 +25,9 @@ class RequestSorter:
                 # status key is needed
                 if 'status' in request.data:
                     # Check if the status is valid and a processor exists for it
-                    if request.data['status'] in self.processors:
+                    if request.data['status'] in self:
                         # Process the request
-                        self.processors[ request.data['status'] ]._process( request )
+                        self[ request.data['status'] ]._process( request )
                     else:
                         request.reply({'status': 'invalid_request', 'reason': 'Invalid status code'})
                 else:
