@@ -2,6 +2,7 @@
 from argparse import ArgumentParser
 import minestorm.console
 import minestorm.test
+import sys
 import curses
 import socket
 import json
@@ -78,12 +79,12 @@ class Command:
             s.close()
             return response
 
-class StartCommand(Command):
+class ExecuteCommand(Command):
     """
-    Command which start minestorm server
+    Command which execute minestorm server
     """
-    name = 'start'
-    description = 'start minestorm internal server'
+    name = 'execute'
+    description = 'execute internal server'
 
     def boot(self, parser):
         parser.add_argument('-c', '--conf', help='specify the configuration file path', default='minestorm.json', metavar='PATH', dest='config')

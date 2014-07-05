@@ -97,7 +97,7 @@ class CliBooter( BaseBooter ):
         manager = minestorm.cli.CommandsManager()
         minestorm.bind("cli", manager)
         # Register commands
-        manager.register( minestorm.cli.StartCommand() )
+        manager.register( minestorm.cli.ExecuteCommand() )
         manager.register( minestorm.cli.ConsoleCommand() )
         manager.register( minestorm.cli.StatusCommand() )
         manager.register( minestorm.cli.TestCommand() )
