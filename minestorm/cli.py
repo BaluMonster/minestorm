@@ -153,6 +153,48 @@ class StopCommand(Command):
             print('Error: can\'t reach the server', f=sys.stderr)
             exit(1)
 
+class StartAllCommand(Command):
+    """
+    Command which start all servers
+    """
+    name = 'start_all'
+    description = 'start all servers'
+
+    def run(self, args):
+        # Try to get a session id
+        sid_request = self.request({ 'status': 'new_session' })
+        # If the server is online
+        if sid_request:
+            # Try to start all servers
+            request = self.request({ 'status': 'start_all_servers', 'sid': sid_request['sid'] })
+            if request['status'] == 'failed':
+                print('Error: {}'.format(request['reason']), f=sys.stderr)
+                exit(1)
+        else:
+            print('Error: can\'t reach the server', f=sys.stderr)
+            exit(1)
+
+class StopAllCommand(Command):
+    """
+    Command which stop all servers
+    """
+    name = 'stop_all'
+    description = 'stop all servers'
+
+    def run(self, args):
+        # Try to get a session id
+        sid_request = self.request({ 'status': 'new_session' })
+        # If the server is online
+        if sid_request:
+            # Try to stop all servers
+            request = self.request({ 'status': 'stop_all_servers', 'sid': sid_request['sid'] })
+            if request['status'] == 'failed':
+                print('Error: {}'.format(request['reason']), f=sys.stderr)
+                exit(1)
+        else:
+            print('Error: can\'t reach the server', f=sys.stderr)
+            exit(1)
+
 class StatusCommand(Command):
     """
     Command which check the status of minestorm
