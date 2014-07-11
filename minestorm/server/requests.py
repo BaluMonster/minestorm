@@ -104,6 +104,42 @@ class StartServerProcessor(BaseProcessor):
         else:
             request.reply({'status':'ok'})
 
+class StartAllServersProcessor(BaseProcessor):
+    """
+    Start all servers processor
+
+    See definition and documentation at
+    https://github.com/pietroalbini/minestorm/wiki/Networking#start_all_servers
+    """
+    name = 'start_all_servers'
+    require_sid = True
+
+    def process(self, request):
+        try:
+            minestorm.get('server.servers').start_all()
+        except RuntimeError:
+            request.reply({ 'status': 'failed', 'reason': str(e) })
+        else:
+            request.reply({'status': 'ok'})
+
+class StopAllServersProcessor(BaseProcessor):
+    """
+    Stop all servers processor
+
+    See definition and documentation at
+    https://github.com/pietroalbini/minestorm/wiki/Networking#stop_all_servers
+    """
+    name = 'stop_all_servers'
+    require_sid = True
+
+    def process(self, request):
+        try:
+            minestorm.get('server.servers').stop_all()
+        except RuntimeError:
+            request.reply({ 'status': 'failed', 'reason': str(e) })
+        else:
+            request.reply({'status': 'ok'})
+
 class StopServerProcessor(BaseProcessor):
     """
     Stop server processor

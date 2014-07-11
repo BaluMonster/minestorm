@@ -158,6 +158,8 @@ class ServerBooter( BaseBooter ):
         manager.register( minestorm.server.requests.ChangeFocusProcessor() )
         manager.register( minestorm.server.requests.StartServerProcessor() )
         manager.register( minestorm.server.requests.StopServerProcessor() )
+        manager.register( minestorm.server.requests.StartAllServersProcessor() )
+        manager.register( minestorm.server.requests.StopAllServersProcessor() )
         manager.register( minestorm.server.requests.CommandProcessor() )
         manager.register( minestorm.server.requests.StatusProcessor() )
         manager.register( minestorm.server.requests.UpdateProcessor() )
