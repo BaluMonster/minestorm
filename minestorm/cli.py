@@ -1,9 +1,5 @@
 #!/usr/bin/python3
 from argparse import ArgumentParser
-import minestorm.common.resources
-import minestorm.common
-import minestorm.console
-import minestorm.test
 import sys
 import curses
 import socket
@@ -11,6 +7,10 @@ import json
 import time
 import datetime
 import struct
+import minestorm.common.resources
+import minestorm.common
+import minestorm.console
+import minestorm.test
 
 class CommandsManager( minestorm.common.resources.ResourceWrapper ):
     """
