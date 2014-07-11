@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from argparse import ArgumentParser
 import minestorm.common.resources
+import minestorm.common
 import minestorm.console
 import minestorm.test
 import sys
@@ -9,6 +10,7 @@ import socket
 import json
 import time
 import datetime
+import struct
 
 class CommandsManager( minestorm.common.resources.ResourceWrapper ):
     """
@@ -54,22 +56,26 @@ class Command:
     def request(self, data):
         """ Make a request to the server """
         try:
-            # Try to connect
+            # Create a new socket
             s = socket.socket()
             s.connect(( socket.gethostname(), minestorm.get('configuration').get('networking.port') ))
-        except socket.error:
-            # if an error occured return none
-            return
-        else:
+            # Prepare data
+            to_send = json.dumps(data).encode('utf-8')
+            length = struct.pack('I', len(to_send))
             # Send the request
-            s.send(json.dumps(data).encode('utf-8'))
+            minestorm.common.send_packet(s, length)
+            minestorm.common.send_packet(s, to_send)
             # Receive response
-            raw = s.recv(4096).decode('utf-8')
-            response = json.loads(raw)
+            length = struct.unpack('I', minestorm.common.receive_packet( s, 4 ))[0]
+            raw = minestorm.common.receive_packet( s, length )
+            # Load the response
+            response = json.loads(raw.decode('utf-8'))
             # Shutdown the socket
             s.shutdown(socket.SHUT_RD)
             s.close()
             return response
+        except socket.error:
+            return
 
 class ExecuteCommand(Command):
     """

@@ -3,7 +3,9 @@ import socket
 import json
 import threading
 import logging
+import struct
 import minestorm
+import minestorm.common
 
 class Listener:
     """
@@ -42,6 +44,20 @@ class Listener:
             self.thread.start()
         else:
             raise RuntimeError('Listener already started')
+
+    def accept(self):
+        """ Accept a connection """
+        try:
+            conn, addr = self.socket.accept() # Accept a connection
+            # Get the packet length
+            length_packet = minestorm.common.receive_packet( conn, 4 )
+            length = struct.unpack( 'I', length_packet )[0]
+            data = minestorm.common.receive_packet( conn, length )
+            self._on_request_recived(conn, addr, data) # Pass the request to the listener
+        except ( socket.error, RuntimeError ):
+            if self.started:
+                logging.getLogger('minestorm.networking').critical('Socket broken')
+                return
 
     def stop(self):
         """ Stop the listener """
@@ -100,7 +116,10 @@ class Request:
         if not self.replied:
             self.replied = True
             encoded = json.dumps(data).encode('utf-8') # Prepare the reply
-            self.connection.send(encoded) # Send the reply
+            length = struct.pack('I', len(encoded)) # Get the length
+            # Send the reply
+            minestorm.common.send_packet(self.connection, length)
+            minestorm.common.send_packet(self.connection, encoded)
             # Shutdown the connection
             self.connection.close()
         else:
@@ -122,11 +141,4 @@ class ListenerThread(threading.Thread):
     def run(self):
         # Stop the loop putting self.stop to false
         while not ( self.stop or minestorm.shutdowned ):
-            try:
-                conn, addr = self.listener.socket.accept() # Accept a connection
-                data = conn.recv( 4096 ) # Recive the request
-                self.listener._on_request_recived(conn, addr, data) # Pass the request to the listener
-            except socket.error:
-                if self.listener.started:
-                    logging.getLogger('minestorm.networking').critical('Socket broken')
-                break
+            self.listener.accept()

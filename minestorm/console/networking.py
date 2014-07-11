@@ -3,7 +3,9 @@ import socket
 import threading
 import json
 import time
+import struct
 import minestorm
+import minestorm.common
 
 class Session:
     """
@@ -25,11 +27,17 @@ class Session:
             # Create a new socket
             s = socket.socket()
             s.connect(self.addr)
+            # Prepare data
+            to_send = json.dumps(data).encode('utf-8')
+            length = struct.pack('I', len(to_send))
             # Send the request
-            s.send(json.dumps(data).encode('utf-8'))
+            minestorm.common.send_packet(s, length)
+            minestorm.common.send_packet(s, to_send)
             # Receive response
-            raw = s.recv(4096).decode('utf-8')
-            response = json.loads(raw)
+            length = struct.unpack('I', minestorm.common.receive_packet( s, 4 ))[0]
+            raw = minestorm.common.receive_packet( s, length )
+            # Load the response
+            response = json.loads(raw.decode('utf-8'))
             # Shutdown the socket
             s.shutdown(socket.SHUT_RD)
             s.close()

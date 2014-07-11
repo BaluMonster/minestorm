@@ -60,3 +60,26 @@ class BaseManager:
 
     def __contains__(self, name):
         return name in self._objects
+
+def send_packet(conn, content):
+    """ Send a packet """
+    sended = 0
+    while sended < len(content):
+        sended_now = conn.send(content[sended:])
+        if sended_now == 0:
+            raise RuntimeError('Broken socket!')
+        sended += sended_now
+
+def receive_packet(conn, length):
+    """ Receive a single packet """
+    result = b''
+    # Read the packet until the length of the received packet
+    # is greater than the wanted length
+    while len(result) < length:
+        # Max chunk length is 4096
+        chunk_length = min( length-len(result), 4096 )
+        chunk = conn.recv( chunk_length ) # Receive the chunk
+        if chunk == b'':
+            raise RuntimeError('Broken socket!')
+        result += chunk
+    return result
