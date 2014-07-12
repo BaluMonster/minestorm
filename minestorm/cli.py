@@ -157,7 +157,7 @@ class StartAllCommand(Command):
     """
     Command which start all servers
     """
-    name = 'start_all'
+    name = 'start-all'
     description = 'start all servers'
 
     def run(self, args):
@@ -178,7 +178,7 @@ class StopAllCommand(Command):
     """
     Command which stop all servers
     """
-    name = 'stop_all'
+    name = 'stop-all'
     description = 'stop all servers'
 
     def run(self, args):
