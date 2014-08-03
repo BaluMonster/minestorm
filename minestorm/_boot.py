@@ -165,6 +165,7 @@ class ServerBooter( BaseBooter ):
         manager.register( minestorm.server.requests.CommandProcessor() )
         manager.register( minestorm.server.requests.StatusProcessor() )
         manager.register( minestorm.server.requests.UpdateProcessor() )
+        manager.register( minestorm.server.requests.RetrieveLinesProcessor() )
         # Subscribe for new requests
         minestorm.get('server.networking').subscribe( manager.sort, {}, 'request' )
 

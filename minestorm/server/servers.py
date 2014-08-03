@@ -196,6 +196,28 @@ class Server:
             result['ram_used'] = self.ram
         return result
 
+    def retrieve_lines(self, start, stop):
+        """ Retrieve some output lines
+        It returns a tuple containing lines and the last index """
+        # If the stop point is negative and greater than the list length
+        # stop will became 0 to prevent exceptions
+        if stop < 0 and len(self.output)+stop < 0:
+            stop = 0
+        # Do the same for the start point
+        if start < 0 and len(self.output)+start < 0 :
+            start = 0
+        # If the stop point is positive and greater than the list length
+        # stop will became -1 to prevent exceptions
+        if stop >= 0 and stop > len(self.output)-1:
+            stop = -1
+        # Do the same for the start point
+        if start >= 0 and start > len(self.output)-1:
+            start = -1
+        # Get the result
+        result = self.output[start:stop]
+        index = stop if stop >= 0 else len(self.output)+1 # Last index
+        return result, index
+
     # Events called by the OutputWatcher
 
     def _on_line_printed(self, line):

@@ -283,3 +283,27 @@ class UpdateProcessor(BaseProcessor):
         result['focus'] = focus
         result['ram_used'] = ram_used
         request.reply(result)
+
+class RetrieveLinesProcessor(BaseProcessor):
+    """
+    Retrieve lines processor
+
+    See definition and documentation at
+    https://github.com/pietroalbini/minestorm/wiki/Networking#retrieve_lines
+    """
+    name = 'retrieve_lines'
+    require_sid = True
+
+    def process(self, request):
+        start, stop = int(request.data['start']), int(request.data['stop'])
+        # Check if the server exists
+        if request.data['server'] in minestorm.get('server.servers').servers:
+            # Get requested lines
+            lines, index = minestorm.get('server.servers').get( request.data['server'] ).retrieve_lines( start, stop )
+            # Build response
+            result = { 'status': 'retrieve_lines_response' }
+            result['lines'] = lines
+            result['last_index'] = index
+            request.reply(result)
+        else:
+            request.reply({ 'status': 'failed', 'reason': 'Invalid server' })
