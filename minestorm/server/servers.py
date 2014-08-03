@@ -214,9 +214,14 @@ class Server:
         if start >= 0 and start > len(self.output)-1:
             start = -1
         # Get the result
-        result = self.output[start:stop]
-        index = stop if stop >= 0 else len(self.output)+1 # Last index
-        return result, index
+        lines = self.output[start:stop]
+        # Add indexes to lines
+        starting_at = start if start >= 0 else len(self.output)+start # Get starting index
+        result = {}
+        for i, line in enumerate(lines):
+            result[i+starting_at] = line
+        # Return the result
+        return result
 
     # Events called by the OutputWatcher
 

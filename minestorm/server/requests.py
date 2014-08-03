@@ -299,11 +299,10 @@ class RetrieveLinesProcessor(BaseProcessor):
         # Check if the server exists
         if request.data['server'] in minestorm.get('server.servers').servers:
             # Get requested lines
-            lines, index = minestorm.get('server.servers').get( request.data['server'] ).retrieve_lines( start, stop )
+            lines = minestorm.get('server.servers').get( request.data['server'] ).retrieve_lines( start, stop )
             # Build response
             result = { 'status': 'retrieve_lines_response' }
             result['lines'] = lines
-            result['last_index'] = index
             request.reply(result)
         else:
             request.reply({ 'status': 'failed', 'reason': 'Invalid server' })
