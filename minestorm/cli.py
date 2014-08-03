@@ -31,7 +31,12 @@ class CommandsManager( minestorm.common.resources.ResourceWrapper ):
         """ "Route" a call into the right command """
         parser = self.prepare_parser() # Get the parser
         args = parser.parse_args() # Parse the arguments
-        self[args.command].run(args) # Run the command
+        # If a command is provided execute it
+        # else show the usage
+        if args.command:
+            self[args.command].run(args) # Run the command
+        else:
+            parser.print_usage()
 
 class Command:
     name = '__base__'
