@@ -1,0 +1,3 @@
+#!/bin/sh
+current_directory="$( cd "$( dirname "$0" )" && pwd )"
+python3 "${current_directory}/cli.py" $@
