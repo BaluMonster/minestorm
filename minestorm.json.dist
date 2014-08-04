@@ -11,7 +11,7 @@
     "sessions": {
         "expiration": {
             "time": 600,
-            "check_every": 30
+            "check_every": 2
         }
     },
 
