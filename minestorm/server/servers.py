@@ -161,7 +161,7 @@ class Server:
             if 'stop_message' in self.details:
                 command += ' '+self.details['stop_message']
             else:
-                command += ' Server ran with MineStorm by Pietro Albini'
+                command += ' Server runs with minestorm'
             # Run the command
             self.command(command) # Run the stop command
         else:
