@@ -201,6 +201,36 @@ class StopAllCommand(Command):
             print('Error: can\'t reach the server', file=sys.stderr)
             exit(1)
 
+class CommandCommand(Command):
+    """
+    Command which send a command to a server
+    """
+    name = 'command'
+    description = 'send a command to all servers'
+
+    def boot(self, parser):
+        parser.add_argument('-s', '--server', help='send only to that server', action='append', dest='servers', default=None, metavar='SERVER')
+        parser.add_argument('command', help='the command you want to send')
+
+    def run(self, args):
+        # Try to get a session id
+        sid_request = self.request({ 'status': 'new_session' })
+        # If the server is online
+        if sid_request:
+            servers = args.servers
+            # If the servers list is empty retrieve it
+            # from the backend server
+            if servers is None:
+                status = self.request({ 'status': 'status', 'sid': sid_request['sid'] })
+                servers = list(status['servers'].keys()) # Get servers list
+            # Send the command to specified servers
+            for server in servers:
+                response = self.request({ 'status': 'command', 'server': server, 'command': args.command, 'sid': sid_request['sid'] })
+                if response['status'] == 'failed':
+                    print('Error on {}: {}'.format(server, response['reason']), file=sys.stderr)
+        else:
+            print('Error: can\'t reach the server', file=sys.stderr)
+
 class StatusCommand(Command):
     """
     Command which check the status of minestorm

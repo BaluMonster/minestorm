@@ -109,6 +109,7 @@ class CliBooter( BaseBooter ):
         manager.register( minestorm.cli.StopCommand() )
         manager.register( minestorm.cli.StartAllCommand() )
         manager.register( minestorm.cli.StopAllCommand() )
+        manager.register( minestorm.cli.CommandCommand() )
         manager.register( minestorm.cli.ConsoleCommand() )
         manager.register( minestorm.cli.StatusCommand() )
         manager.register( minestorm.cli.TestCommand() )
