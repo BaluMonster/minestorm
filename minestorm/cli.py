@@ -144,6 +144,7 @@ class StopCommand(Command):
 
     def boot(self, parser):
         parser.add_argument('server', help='choose which server stop')
+        parser.add_argument('-m', '--message', help='message you want to display on stop', default=None)
 
     def run(self, args):
         # Try to get a session id
@@ -151,7 +152,7 @@ class StopCommand(Command):
         # If the server is online
         if sid_request:
             # Try to stop the server
-            request = self.request({ 'status': 'stop_server', 'server': args.server, 'sid': sid_request['sid'] })
+            request = self.request({ 'status': 'stop_server', 'server': args.server, 'message': args.message, 'sid': sid_request['sid'] })
             if request['status'] == 'failed':
                 print('Error: {}'.format(request['reason']), file=sys.stderr)
                 exit(1)
@@ -187,13 +188,16 @@ class StopAllCommand(Command):
     name = 'stop-all'
     description = 'stop all servers'
 
+    def boot(self, parser):
+        parser.add_argument('-m', '--message', help='message you want to display on stop', default=None)
+
     def run(self, args):
         # Try to get a session id
         sid_request = self.request({ 'status': 'new_session' })
         # If the server is online
         if sid_request:
             # Try to stop all servers
-            request = self.request({ 'status': 'stop_all_servers', 'sid': sid_request['sid'] })
+            request = self.request({ 'status': 'stop_all_servers', 'message': args.message, 'sid': sid_request['sid'] })
             if request['status'] == 'failed':
                 print('Error: {}'.format(request['reason']), file=sys.stderr)
                 exit(1)
