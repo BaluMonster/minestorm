@@ -35,12 +35,12 @@ class ServersManager:
             if server.status in (server.STATUS_STOPPED, server.STATUS_CRASHED):
                 server.start()
 
-    def stop_all(self):
+    def stop_all(self, message=None):
         """ Stop all servers """
         for name, server in self.servers.items():
             # Stop the server only if it's started
             if server.status == server.STATUS_STARTED:
-                server.stop()
+                server.stop(message)
 
     def get(self, name):
         """ Get a server """
@@ -146,7 +146,7 @@ class Server:
         else:
             raise RuntimeError('The server was already started')
 
-    def stop(self):
+    def stop(self, message=None):
         """ Stop the server """
         # If the server is running
         if self.status == self.STATUS_STARTED:
@@ -158,7 +158,9 @@ class Server:
             elif self.details['type'] == 'bungeecord':
                 command += 'end'
             # Add the specified stop message or the default stop message
-            if 'stop_message' in self.details:
+            if message is not None:
+                command += ' '+message
+            elif 'stop_message' in self.details:
                 command += ' '+self.details['stop_message']
             else:
                 command += ' Server runs with minestorm'

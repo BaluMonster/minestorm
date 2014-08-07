@@ -133,8 +133,10 @@ class StopAllServersProcessor(BaseProcessor):
     require_sid = True
 
     def process(self, request):
+        # Get the stop message
+        stop_message = request.data['message'] if 'message' in request.data else None
         try:
-            minestorm.get('server.servers').stop_all()
+            minestorm.get('server.servers').stop_all(stop_message)
         except RuntimeError:
             request.reply({ 'status': 'failed', 'reason': str(e) })
         else:
@@ -151,8 +153,10 @@ class StopServerProcessor(BaseProcessor):
     require_sid = True
 
     def process(self, request):
+        # Get the stop message
+        stop_message = request.data['message'] if 'message' in request.data else None
         try:
-            minestorm.get('server.servers').get( request.data['server'] ).stop()
+            minestorm.get('server.servers').get( request.data['server'] ).stop(stop_message)
         except NameError:
             request.reply({ 'status': 'failed', 'reason': 'Server {} does not exist'.format(request.data['server']) })
         except RuntimeError as e:
