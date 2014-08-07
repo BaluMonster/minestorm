@@ -20,3 +20,6 @@ You can get more informations on the [wiki](https://github.com/pietroalbini/mine
 
 Minestorm is currently in development, so it may be buggy.  
 Please report all bugs you find on the [issue tracker](https://github.com/pietroalbini/minestorm/issues), thanks!
+
+Latest release is **1.0.0-alpha1**.  
+You can see the changelog [here](https://github.com/pietroalbini/minestorm/blob/master/CHANGELOG.md).
