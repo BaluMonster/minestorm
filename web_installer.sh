@@ -5,6 +5,8 @@
 INSTALLATION_PATH=/opt/minestorm
 SYMLINK=/usr/local/bin/minestorm
 
+uninstaller_info="${INSTALLATION_PATH}/.uninstaller-info"
+
 if [ -e "${INSTALLATION_PATH}" ] ; then
     mv "${INSTALLATION_PATH}" /tmp/old_minestorm
     echo "The directory ${INSTALLATION_PATH} already exists!"
@@ -36,5 +38,9 @@ else
     ln -s "${INSTALLATION_PATH}/cli" "${SYMLINK}" >/dev/null
     chmod +x "${SYMLINK}"
 fi
+
+touch "${uninstaller_info}"
+echo "${INSTALLATION_PATH}" >> "${uninstaller_info}"
+echo "${SYMLINK}" >> "${uninstaller_info}"
 
 echo "minestorm ${tag} successifully installed"
