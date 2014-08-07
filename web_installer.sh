@@ -24,7 +24,7 @@ fi
 cd ${INSTALLATION_PATH}
 tag=`git describe --abbrev=0 --tags 2>/dev/null` # Get latest tag
 if [ $? = 0 ] ; then
-    git checkout ${tag} >/dev/null
+    git checkout ${tag} >/dev/null 2>&1
 else
     git checkout master >/dev/null 2>&1
 fi
