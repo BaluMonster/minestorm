@@ -22,7 +22,7 @@ class CommandsManager( minestorm.common.resources.ResourceWrapper ):
         """ Prepare the arguments parser """
         parser = ArgumentParser(prog="minestorm") # Initialize a new ArgumentParser instance
         parser.add_argument('--version', version=minestorm.__version__, action='version')
-        subs = parser.add_subparsers(help='commands', dest='command') # Initialize the subparser for the main command
+        subs = parser.add_subparsers(help='commands', dest='_command') # Initialize the subparser for the main command
         for name, command in self:
             sub = subs.add_parser(name, help=command.description) # Register the command
             command.boot(sub) # Allow command customization
@@ -34,8 +34,8 @@ class CommandsManager( minestorm.common.resources.ResourceWrapper ):
         args = parser.parse_args() # Parse the arguments
         # If a command is provided execute it
         # else show the usage
-        if args.command:
-            self[args.command].run(args) # Run the command
+        if args._command:
+            self[args._command].run(args) # Run the command
         else:
             parser.print_usage()
 
@@ -129,10 +129,10 @@ class StartCommand(Command):
             # Try to start the server
             request = self.request({ 'status': 'start_server', 'server': args.server, 'sid': sid_request['sid'] })
             if request['status'] == 'failed':
-                print('Error: {}'.format(request['reason']), f=sys.stderr)
+                print('Error: {}'.format(request['reason']), file=sys.stderr)
                 exit(1)
         else:
-            print('Error: can\'t reach the server', f=sys.stderr)
+            print('Error: can\'t reach the server', file=sys.stderr)
             exit(1)
 
 class StopCommand(Command):
@@ -153,10 +153,10 @@ class StopCommand(Command):
             # Try to stop the server
             request = self.request({ 'status': 'stop_server', 'server': args.server, 'sid': sid_request['sid'] })
             if request['status'] == 'failed':
-                print('Error: {}'.format(request['reason']), f=sys.stderr)
+                print('Error: {}'.format(request['reason']), file=sys.stderr)
                 exit(1)
         else:
-            print('Error: can\'t reach the server', f=sys.stderr)
+            print('Error: can\'t reach the server', file=sys.stderr)
             exit(1)
 
 class StartAllCommand(Command):
@@ -174,10 +174,10 @@ class StartAllCommand(Command):
             # Try to start all servers
             request = self.request({ 'status': 'start_all_servers', 'sid': sid_request['sid'] })
             if request['status'] == 'failed':
-                print('Error: {}'.format(request['reason']), f=sys.stderr)
+                print('Error: {}'.format(request['reason']), file=sys.stderr)
                 exit(1)
         else:
-            print('Error: can\'t reach the server', f=sys.stderr)
+            print('Error: can\'t reach the server', file=sys.stderr)
             exit(1)
 
 class StopAllCommand(Command):
@@ -195,10 +195,10 @@ class StopAllCommand(Command):
             # Try to stop all servers
             request = self.request({ 'status': 'stop_all_servers', 'sid': sid_request['sid'] })
             if request['status'] == 'failed':
-                print('Error: {}'.format(request['reason']), f=sys.stderr)
+                print('Error: {}'.format(request['reason']), file=sys.stderr)
                 exit(1)
         else:
-            print('Error: can\'t reach the server', f=sys.stderr)
+            print('Error: can\'t reach the server', file=sys.stderr)
             exit(1)
 
 class StatusCommand(Command):
