@@ -3,6 +3,8 @@ import sys
 import signal
 import minestorm._boot
 
+__version__ = '1.0.0-alpha1'
+
 class Container:
     """
     The container is a class which collect all useful instances

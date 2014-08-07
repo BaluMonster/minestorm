@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import curses
 from . import components
+import minestorm
 
 class Console:
     """
@@ -17,6 +18,7 @@ class Console:
         # Initialize components
         self.stream = components.StreamComponent(self)
         self.header = components.HeaderComponent(self)
+        self.header.left_message('minestorm v{}'.format(minestorm.__version__))
         self.sidebar = components.SidebarComponent(self)
         self.sidebar.update()
         self.infobar = components.InfoBarComponent(self)
