@@ -20,12 +20,8 @@ class CommandsManager( minestorm.common.resources.ResourceWrapper ):
 
     def prepare_parser(self):
         """ Prepare the arguments parser """
-<<<<<<< HEAD
         parser = ArgumentParser(prog="minestorm") # Initialize a new ArgumentParser instance
-=======
-        parser = ArgumentParser() # Initialize a new ArgumentParser instance
         parser.add_argument('--version', version=minestorm.__version__, action='version')
->>>>>>> prepare-release
         subs = parser.add_subparsers(help='commands', dest='command') # Initialize the subparser for the main command
         for name, command in self:
             sub = subs.add_parser(name, help=command.description) # Register the command
