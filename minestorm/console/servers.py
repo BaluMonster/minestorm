@@ -131,4 +131,5 @@ class SyncherThread(threading.Thread):
     def run(self):
         while not self.stop:
             minestorm.get('console.servers').sync()
+            minestorm.get('console.ui').sidebar.update() # Update the sidebar
             time.sleep(1)

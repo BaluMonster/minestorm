@@ -41,7 +41,7 @@ class MinestormConsole:
     def _init_ui(self):
         """ Initialize the UI """
         ui = minestorm.console.ui.Console()
-        minestorm.bind("console.ui", ui)
+        # It auto binds himself
 
     def _init_commands(self):
         """ Initialize the console manager """

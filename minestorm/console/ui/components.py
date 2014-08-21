@@ -162,9 +162,6 @@ class SidebarComponent(BaseComponent):
         self.height = screen.lines - 3
         self.start_x = screen.cols - 30
         super(SidebarComponent, self).__init__(screen)
-        # Setup servers list
-        self.servers = {}
-        self.current_server = None
         # Setup boxes
         self.boxes = {}
         self.boxes_ordered = []
@@ -200,42 +197,6 @@ class SidebarComponent(BaseComponent):
         self.boxes[box].colour = colour
         self.update()
 
-    def add_server(self, name, online=True):
-        """ Add a server to the list """
-        # No duplicates, please
-        if name not in self.servers:
-            self.servers[name] = SidebarServer(name, online) # Add the server
-            self.update()
-
-    def remove_server(self, name):
-        """ Remove a server from the list """
-        del self.servers[name]
-        # If the server is the current, remove it also from the current server
-        if self.current_server == name:
-            self.current_server = None
-        self.update()
-
-    def flush_servers(self):
-        """ Flush all servers """
-        for server in self.servers.copy():
-            self.remove_server(server)
-
-    def set_current_server(self, name):
-        """ Change the current server """
-        if name in self.servers.keys():
-            self.current_server = name
-            self.update()
-
-    def set_server_online(self, name):
-        """ Set online to a server """
-        self.servers[name].online = True
-        self.update()
-
-    def set_server_offline(self, name):
-        """ Set offline to a server """
-        self.servers[name].online = False
-        self.update()
-
     def update(self):
         """ Update the sidebar """
         self.erase()
@@ -252,23 +213,38 @@ class SidebarComponent(BaseComponent):
 
     def _update_server_list(self):
         """ Update the server list """
-        if len(self.servers) > 0:
-            top = self.height-len(self.servers)-2 # Calculate the top line
+        servers_list = minestorm.get('console.servers').all()
+        if len(servers_list) > 0:
+            top = self.height-len(servers_list)-2 # Calculate the top line
         else:
             top = self.height-3
         self.component.addstr(top, 3, 'Available servers:', curses.A_BOLD)
         # Get servers list
-        servers = list(self.servers.keys())
+        servers = list(servers_list.keys())
         servers.sort()
-        servers.sort(key=lambda s: self.servers[s].online == True, reverse=True)
+        servers.sort(key=lambda s: servers_list[s].status in ('STARTING', 'STARTED', 'STOPPING'), reverse=True)
         # Render each server
-        if len(self.servers) > 0:
+        if len(servers_list) > 0:
             i = 1
             for server in servers:
-                self.servers[server].render(top+i, self, ( self.current_server == server ) )
+                self._render_server(top+i, server )
                 i += 1
         else:
             self.component.addstr(top+1, 3, "No server available")
+
+    def _render_server(self, line, name):
+        """ Render a single server """
+        server = minestorm.get('console.servers').get(name)
+        # Get the bullet colour
+        if server.status in ('STARTING', 'STARTED', 'STOPPING'):
+            bullet_colour = self.colours['green'] | curses.A_BOLD
+        else:
+            bullet_colour = self.colours['red'] | curses.A_BOLD
+        # Render!
+        if minestorm.get('console.ui').focus == name:
+            self.component.addstr(line, 1, '>', self.colours['blue'] | curses.A_BOLD)
+        self.component.addstr(line, 3, name)
+        self.component.addstr(line, self.width-2, '⚫', bullet_colour)
 
 class SidebarBox:
     """
@@ -306,30 +282,6 @@ class SidebarBox:
         else:
             colour = 'red'
         return colour
-
-class SidebarServer:
-    """
-    A server in the sidebar (?)
-    """
-
-    def __init__(self, name, online=True):
-        self.name = name
-        self.online = online
-
-    def render(self, line, sidebar, current):
-        """ Render the server at the specified line """
-        win = sidebar.component
-        name = self.name
-        # Get the bullet colour
-        if self.online:
-            bullet_colour = sidebar.colours['green'] | curses.A_BOLD
-        else:
-            bullet_colour = sidebar.colours['red'] | curses.A_BOLD
-        # Render!
-        if current:
-            win.addstr(line, 1, '>', sidebar.colours['blue'] | curses.A_BOLD)
-        win.addstr(line, 3, name)
-        win.addstr(line, sidebar.width-2, '⚫', bullet_colour)
 
 class InfoBarComponent(BaseComponent):
     """

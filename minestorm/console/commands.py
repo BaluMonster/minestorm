@@ -69,6 +69,7 @@ class SwitchCommand(Command):
         # Try to switch server
         result = minestorm.get('console.networking').request({ 'status': 'change_focus', 'server': arguments[0], 'sid': minestorm.get('console.networking').sid })
         if result['status'] == 'ok':
+            minestorm.get('console.ui').focus = arguments[0]
             return 'Server switched'
         elif result['status'] == 'failed':
             return result['reason']
