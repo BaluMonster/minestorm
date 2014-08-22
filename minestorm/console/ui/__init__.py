@@ -81,12 +81,6 @@ class Console:
             if listener['type'] == 'all' or listener['type'] == key_type:
                 listener['listener'](key) # Call the listener
 
-    def load_updates(self, data):
-        """ Load updates from the requests """
-        # Accept only "updates" status codes
-        if data['status'] == 'updates':
-            self.sidebar.set_box_value('RAM', data['ram_used'])
-
     def loop(self):
         """ Main loop """
         try:

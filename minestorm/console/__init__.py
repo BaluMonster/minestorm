@@ -24,11 +24,8 @@ class MinestormConsole:
         # Create the session
         networking = minestorm.console.networking.Session()
         networking.connect(socket.gethostname(), 45342)
-        # Create the updater thread
-        updater = minestorm.console.networking.UpdaterThread()
         # Bind all things
         minestorm.bind("console.networking", networking)
-        minestorm.bind("console.networking.updater", updater)
 
     def _init_servers(self):
         """ Initialize the servers cache """
@@ -61,13 +58,11 @@ class MinestormConsole:
     def start(self):
         """ Start the console """
         minestorm.register_shutdown_function(self.shutdown)
-        minestorm.get("console.networking.updater").start()
         minestorm.get("console.servers.syncher").start()
         minestorm.get("console.ui").loop()
 
     def shutdown(self):
         """ Stop the console """
-        minestorm.get("console.networking.updater").stop = True
         minestorm.get("console.servers.syncher").stop = True
         minestorm.get("console.ui").stop = True
         curses.endwin()

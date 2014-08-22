@@ -3,6 +3,7 @@ import curses
 import time
 import threading
 import minestorm
+import minestorm.common
 
 class BaseComponent:
     """
@@ -158,40 +159,6 @@ class SidebarComponent(BaseComponent):
         self.height = screen.lines - 3
         self.start_x = screen.cols - 30
         super(SidebarComponent, self).__init__(screen)
-        # Setup boxes
-        self.boxes = {}
-        self.boxes_ordered = []
-        self.add_box('RAM', True)
-
-    def add_box(self, name, progress=False, colour='white'):
-        """ Add a box to the sidebar """
-        box = SidebarBox(name, progress, colour)
-        # Register the box both in the standard dict and in the ordered list
-        self.boxes[name] = box
-        self.boxes_ordered.append(box)
-        self.update()
-
-    def remove_box(self, name):
-        """ Remove a box """
-        box = self.boxes.pop(name) # Pop the box from the dict
-        self.boxes_ordered.remove(box) # Remove the box also from the ordered list
-        self.update()
-
-    def set_box_value(self, box, value):
-        """ Set the value of a box """
-        # If the box is a progress bar
-        if self.boxes[box].progress:
-            value = int(value)
-            # If the value is greater than 100 edit it and set 100
-            if value > 100:
-                value = 100
-        self.boxes[box].value = value
-        self.update()
-
-    def set_box_colour(self, box, colour):
-        """ Set the colour of a box """
-        self.boxes[box].colour = colour
-        self.update()
 
     def update(self):
         """ Update the sidebar """
@@ -202,10 +169,18 @@ class SidebarComponent(BaseComponent):
 
     def _update_boxes(self):
         """ Update boxes """
+        boxes = [( "RAM", "-" ), ( "Uptime", "-" )]
+        focus = minestorm.get("console.ui").focus
+        if focus:
+            server = minestorm.get("console.servers").get(focus)
+            if server.status in ('STARTING', 'STARTED', 'STOPPING'):
+                ram = str(round(server.ram_used, 2))+"%"
+                uptime = minestorm.common.seconds_to_string(round(server.uptime))
+                boxes = [( "RAM", ram ), ( "Uptime", uptime )]
         line = 1
-        for box in self.boxes_ordered:
-            box.render(line, self) # Render the box
-            line += 3
+        for key, value in boxes:
+            self._render_box(line, key, value)
+            line += 1
 
     def _update_server_list(self):
         """ Update the server list """
@@ -227,6 +202,11 @@ class SidebarComponent(BaseComponent):
                 i += 1
         else:
             self.component.addstr(top+1, 3, "No server available")
+
+    def _render_box(self, line, key, value):
+        """ Render a box at the specified line """
+        self.component.addstr(line, 1, key+':')
+        self.component.addstr(line, self.width-len(value)-1, value, curses.A_BOLD)
 
     def _render_server(self, line, name):
         """ Render a single server """
@@ -253,21 +233,7 @@ class SidebarBox:
         self.value = 0 if progress else "" # Setup the default value
         self.colour = colour
 
-    def render(self, line, sidebar):
-        """ Render the box at the specified line """
-        win = sidebar.component
-        win.addstr(line, 1, self.name+':')
-        # Choose if render the progress-bar or the simple value
-        if self.progress:
-            # Write the percent value
-            percent = str(self.value)+'%' # Prepare the percent value
-            win.addstr(line, sidebar.width-len(percent)-1, percent, curses.A_BOLD)
-            # Write the progress bar
-            win.addstr(line+1, 1, '[')
-            win.addstr(line+1, 2, '='*int(self.value*(sidebar.width-3)/100), sidebar.colours[self._get_progress_bar_colour()])
-            win.addstr(line+1, sidebar.width-2, ']')
-        else:
-            win.addstr(line+1, 1, self.value, sidebar.colours[self.colour] | curses.A_BOLD)
+
 
     def _get_progress_bar_colour(self):
         """ Get the progress bar color """

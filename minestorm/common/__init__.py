@@ -83,3 +83,21 @@ def receive_packet(conn, length):
             raise RuntimeError('Broken socket!')
         result += chunk
     return result
+
+def seconds_to_string(seconds, days_suffix='d', hours_suffix='h', minutes_suffix='m', seconds_suffix='s'):
+    """ Convert seconds to string ( 100 seconds -> 1m 40s ) """
+    definition = [
+        ( 24 * 60 * 60, days_suffix ),
+        ( 60 * 60, hours_suffix ),
+        ( 60, minutes_suffix ),
+        ( 1, seconds_suffix )
+    ]
+    result = ''
+    for time, suffix in definition:
+        if seconds < time:
+            continue
+        this = seconds // time
+        if this > 0:
+            result += str(this)+suffix+' '
+            seconds -= this * time
+    return result.strip()

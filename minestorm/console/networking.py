@@ -58,20 +58,3 @@ class Session:
             self.sid = response['sid'] # Retrieve the sid
         else:
             raise RuntimeError('Unable to get a sid')
-
-class UpdaterThread(threading.Thread):
-    """
-    Thread which check for updates
-    """
-
-    def __init__(self):
-        super(UpdaterThread, self).__init__()
-        self.stop = False
-
-    def run(self):
-        while not self.stop:
-            # First check if a connection was estabilished
-            if minestorm.get('console.networking').addr:
-                response = minestorm.get('console.networking').request({ 'status': 'update', 'sid': minestorm.get('console.networking').sid })
-                minestorm.get('console.ui').load_updates(response)
-                time.sleep(0.5)
