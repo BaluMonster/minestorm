@@ -191,24 +191,6 @@ class RemoveSessionProcessor(BaseProcessor):
         minestorm.get('server.sessions').remove( request.data['sid'] ) # Remove the session
         request.reply({ 'status': 'ok' })
 
-class ChangeFocusProcessor(BaseProcessor):
-    """
-    Change focus processor
-    
-    See definition and documentation at
-    https://github.com/pietroalbini/minestorm/wiki/Networking#change_focus
-    """
-    name = 'change_focus'
-    require_sid = True
-
-    def process(self, request):
-        # Check if the session exists
-        if request.data['server'] in minestorm.get('server.servers').servers:
-            minestorm.get('server.sessions').get(request.data['sid']).change_focus(request.data['server']) # Change the focus
-            request.reply({ 'status': 'ok' })
-        else:
-            request.reply({ 'status': 'failed', 'reason': 'Unknow server: {}'.format(request.data['server']) })
-
 class CommandProcessor(BaseProcessor):
     """
     Command processor
@@ -223,9 +205,6 @@ class CommandProcessor(BaseProcessor):
         # If the passed server exists pick it
         if 'server' in request.data and request.data['server'] in minestorm.get('server.servers').servers:
             server = minestorm.get('server.servers').get(request.data['server'])
-        # Else, if the session has a focused server pick it
-        elif minestorm.get('server.sessions').get(request.data['sid']).focus in minestorm.get('server.servers').servers:
-            server = minestorm.get('server.servers').get(minestorm.get('server.sessions').get(request.data['sid']).focus)
         # Else return an error
         else:
             request.reply({ 'status': 'failed', 'reason': 'Please specify a valid server' })
@@ -250,40 +229,25 @@ class StatusProcessor(BaseProcessor):
     def process(self, request):
         request.reply({ 'status': 'status_response', 'servers': minestorm.get('server.servers').status() })
 
-class UpdateProcessor(BaseProcessor):
+class RetrieveLinesProcessor(BaseProcessor):
     """
-    Update processor
-    
+    Retrieve lines processor
+
     See definition and documentation at
-    https://github.com/pietroalbini/minestorm/wiki/Networking#update
+    https://github.com/pietroalbini/minestorm/wiki/Networking#retrieve_lines
     """
-    name = 'update'
+    name = 'retrieve_lines'
     require_sid = True
 
     def process(self, request):
-        # Get new lines
-        new_lines = minestorm.get('server.sessions').get(request.data['sid']).new_lines
-        minestorm.get('server.sessions').get(request.data['sid']).new_lines = []
-        # Get server status
-        status = []
-        for name, server in minestorm.get('server.servers').status().items():
-            this = {}
-            this['name'] = name
-            this['online'] = server['status'] in ( 'STARTING', 'STARTED', 'STOPPING' )
-            status.append(this)
-        # Get the focus
-        focus = minestorm.get('server.sessions').get(request.data['sid']).focus
-        # Get used ram if a focused server is present
-        if focus != None:
-            ram_used = minestorm.get('server.servers').get(focus).ram
-            if ram_used == None:
-                ram_used = 0
+        start, stop = int(request.data['start']), int(request.data['stop'])
+        # Check if the server exists
+        if request.data['server'] in minestorm.get('server.servers').servers:
+            # Get requested lines
+            lines = minestorm.get('server.servers').get( request.data['server'] ).retrieve_lines( start, stop )
+            # Build response
+            result = { 'status': 'retrieve_lines_response' }
+            result['lines'] = lines
+            request.reply(result)
         else:
-            ram_used = 0
-        # Prepare result
-        result = { 'status': 'updates' }
-        result['new_lines'] = new_lines
-        result['servers'] = status
-        result['focus'] = focus
-        result['ram_used'] = ram_used
-        request.reply(result)
+            request.reply({ 'status': 'failed', 'reason': 'Invalid server' })

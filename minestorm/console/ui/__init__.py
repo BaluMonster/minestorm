@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import curses
+import minestorm
 from . import components
 import minestorm
 
@@ -9,12 +10,15 @@ class Console:
     """
 
     def __init__(self):
+        minestorm.bind('console.ui', self)
+        # Initialize the console
         self._initialize_screen()
         self._initialize_curses()
         self._initialize_colours()
         # Some variables
         self.keylisteners = []
         self.stop = False
+        self.focus = None
         # Initialize components
         self.stream = components.StreamComponent(self)
         self.header = components.HeaderComponent(self)
@@ -78,22 +82,6 @@ class Console:
             # Call the listener only if the type is correct
             if listener['type'] == 'all' or listener['type'] == key_type:
                 listener['listener'](key) # Call the listener
-
-    def load_updates(self, data):
-        """ Load updates from the requests """
-        # Accept only "updates" status codes
-        if data['status'] == 'updates':
-            # Load new lines
-            for line in data['new_lines']:
-                self.stream.add_line(line)
-            # Load servers
-            self.sidebar.flush_servers()
-            for server in data['servers']:
-                self.sidebar.add_server(server['name'], server['online'])
-            # Set focused server
-            if data['focus']:
-                self.sidebar.set_current_server(data['focus'])
-            self.sidebar.set_box_value('RAM', data['ram_used'])
 
     def loop(self):
         """ Main loop """

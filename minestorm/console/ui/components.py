@@ -3,6 +3,7 @@ import curses
 import time
 import threading
 import minestorm
+import minestorm.common
 
 class BaseComponent:
     """
@@ -75,28 +76,24 @@ class StreamComponent(BaseComponent):
         self.height = screen.lines - 3
         self.width = screen.cols - 30
         super(StreamComponent, self).__init__(screen)
-        # Setup lines
-        self.lines = []
         self.position = 0
-
-    def add_line(self, line):
-        """ Add a line to the stream """
-        self.lines.append(line) # Append the line to the stream
-        # Move the position to the last line
-        # if the position wasn't moved
-        self.position = len(self.lines)
-        self.update() # Update the screen
 
     def update(self):
         """ Update the screen """
+        focus = minestorm.get('console.ui').focus
+        if focus:
+            lines = list( minestorm.get('console.servers').get( focus ).all_lines().values() )
+        else:
+            lines = []
+        self.position = len(lines) # temp fix
         max_lines = self.height
         # If the number of lines is lower than the max number of lines
         # display all of them
         # Else display only the desidered chunk
-        if ( len(self.lines) < max_lines ) or self.position-max_lines < 0:
-            chunk = self.lines
+        if ( len(lines) < max_lines ) or self.position-max_lines < 0:
+            chunk = lines
         else:
-            chunk = self.lines[ (self.position-max_lines) : self.position ]
+            chunk = lines[ (self.position-max_lines) : self.position ]
         # Split lines into small parts
         # Needed to avoid lines truncating
         new_chunk = []
@@ -162,79 +159,6 @@ class SidebarComponent(BaseComponent):
         self.height = screen.lines - 3
         self.start_x = screen.cols - 30
         super(SidebarComponent, self).__init__(screen)
-        # Setup servers list
-        self.servers = {}
-        self.current_server = None
-        # Setup boxes
-        self.boxes = {}
-        self.boxes_ordered = []
-        self.add_box('RAM', True)
-
-    def add_box(self, name, progress=False, colour='white'):
-        """ Add a box to the sidebar """
-        box = SidebarBox(name, progress, colour)
-        # Register the box both in the standard dict and in the ordered list
-        self.boxes[name] = box
-        self.boxes_ordered.append(box)
-        self.update()
-
-    def remove_box(self, name):
-        """ Remove a box """
-        box = self.boxes.pop(name) # Pop the box from the dict
-        self.boxes_ordered.remove(box) # Remove the box also from the ordered list
-        self.update()
-
-    def set_box_value(self, box, value):
-        """ Set the value of a box """
-        # If the box is a progress bar
-        if self.boxes[box].progress:
-            value = int(value)
-            # If the value is greater than 100 edit it and set 100
-            if value > 100:
-                value = 100
-        self.boxes[box].value = value
-        self.update()
-
-    def set_box_colour(self, box, colour):
-        """ Set the colour of a box """
-        self.boxes[box].colour = colour
-        self.update()
-
-    def add_server(self, name, online=True):
-        """ Add a server to the list """
-        # No duplicates, please
-        if name not in self.servers:
-            self.servers[name] = SidebarServer(name, online) # Add the server
-            self.update()
-
-    def remove_server(self, name):
-        """ Remove a server from the list """
-        del self.servers[name]
-        # If the server is the current, remove it also from the current server
-        if self.current_server == name:
-            self.current_server = None
-        self.update()
-
-    def flush_servers(self):
-        """ Flush all servers """
-        for server in self.servers.copy():
-            self.remove_server(server)
-
-    def set_current_server(self, name):
-        """ Change the current server """
-        if name in self.servers.keys():
-            self.current_server = name
-            self.update()
-
-    def set_server_online(self, name):
-        """ Set online to a server """
-        self.servers[name].online = True
-        self.update()
-
-    def set_server_offline(self, name):
-        """ Set offline to a server """
-        self.servers[name].online = False
-        self.update()
 
     def update(self):
         """ Update the sidebar """
@@ -245,30 +169,58 @@ class SidebarComponent(BaseComponent):
 
     def _update_boxes(self):
         """ Update boxes """
+        boxes = [( "RAM", "-" ), ( "Uptime", "-" )]
+        focus = minestorm.get("console.ui").focus
+        if focus:
+            server = minestorm.get("console.servers").get(focus)
+            if server.status in ('STARTING', 'STARTED', 'STOPPING'):
+                ram = str(round(server.ram_used, 2))+"%"
+                uptime = minestorm.common.seconds_to_string(round(server.uptime))
+                boxes = [( "RAM", ram ), ( "Uptime", uptime )]
         line = 1
-        for box in self.boxes_ordered:
-            box.render(line, self) # Render the box
-            line += 3
+        for key, value in boxes:
+            self._render_box(line, key, value)
+            line += 1
 
     def _update_server_list(self):
         """ Update the server list """
-        if len(self.servers) > 0:
-            top = self.height-len(self.servers)-2 # Calculate the top line
+        servers_list = minestorm.get('console.servers').all()
+        if len(servers_list) > 0:
+            top = self.height-len(servers_list)-2 # Calculate the top line
         else:
             top = self.height-3
         self.component.addstr(top, 3, 'Available servers:', curses.A_BOLD)
         # Get servers list
-        servers = list(self.servers.keys())
+        servers = list(servers_list.keys())
         servers.sort()
-        servers.sort(key=lambda s: self.servers[s].online == True, reverse=True)
+        servers.sort(key=lambda s: servers_list[s].status in ('STARTING', 'STARTED', 'STOPPING'), reverse=True)
         # Render each server
-        if len(self.servers) > 0:
+        if len(servers_list) > 0:
             i = 1
             for server in servers:
-                self.servers[server].render(top+i, self, ( self.current_server == server ) )
+                self._render_server(top+i, server )
                 i += 1
         else:
             self.component.addstr(top+1, 3, "No server available")
+
+    def _render_box(self, line, key, value):
+        """ Render a box at the specified line """
+        self.component.addstr(line, 1, key+':')
+        self.component.addstr(line, self.width-len(value)-1, value, curses.A_BOLD)
+
+    def _render_server(self, line, name):
+        """ Render a single server """
+        server = minestorm.get('console.servers').get(name)
+        # Get the bullet colour
+        if server.status in ('STARTING', 'STARTED', 'STOPPING'):
+            bullet_colour = self.colours['green'] | curses.A_BOLD
+        else:
+            bullet_colour = self.colours['red'] | curses.A_BOLD
+        # Render!
+        if minestorm.get('console.ui').focus == name:
+            self.component.addstr(line, 1, '>', self.colours['blue'] | curses.A_BOLD)
+        self.component.addstr(line, 3, name)
+        self.component.addstr(line, self.width-2, '⚫', bullet_colour)
 
 class SidebarBox:
     """
@@ -281,21 +233,7 @@ class SidebarBox:
         self.value = 0 if progress else "" # Setup the default value
         self.colour = colour
 
-    def render(self, line, sidebar):
-        """ Render the box at the specified line """
-        win = sidebar.component
-        win.addstr(line, 1, self.name+':')
-        # Choose if render the progress-bar or the simple value
-        if self.progress:
-            # Write the percent value
-            percent = str(self.value)+'%' # Prepare the percent value
-            win.addstr(line, sidebar.width-len(percent)-1, percent, curses.A_BOLD)
-            # Write the progress bar
-            win.addstr(line+1, 1, '[')
-            win.addstr(line+1, 2, '='*int(self.value*(sidebar.width-3)/100), sidebar.colours[self._get_progress_bar_colour()])
-            win.addstr(line+1, sidebar.width-2, ']')
-        else:
-            win.addstr(line+1, 1, self.value, sidebar.colours[self.colour] | curses.A_BOLD)
+
 
     def _get_progress_bar_colour(self):
         """ Get the progress bar color """
@@ -306,30 +244,6 @@ class SidebarBox:
         else:
             colour = 'red'
         return colour
-
-class SidebarServer:
-    """
-    A server in the sidebar (?)
-    """
-
-    def __init__(self, name, online=True):
-        self.name = name
-        self.online = online
-
-    def render(self, line, sidebar, current):
-        """ Render the server at the specified line """
-        win = sidebar.component
-        name = self.name
-        # Get the bullet colour
-        if self.online:
-            bullet_colour = sidebar.colours['green'] | curses.A_BOLD
-        else:
-            bullet_colour = sidebar.colours['red'] | curses.A_BOLD
-        # Render!
-        if current:
-            win.addstr(line, 1, '>', sidebar.colours['blue'] | curses.A_BOLD)
-        win.addstr(line, 3, name)
-        win.addstr(line, sidebar.width-2, '⚫', bullet_colour)
 
 class InfoBarComponent(BaseComponent):
     """
@@ -411,7 +325,7 @@ class InputBarComponent(BaseComponent):
                     # Send command to the backend
                     sid = minestorm.get("console.networking").sid
                     try:
-                        response = minestorm.get("console.networking").request({ 'status': 'command', 'command': self.content, 'sid': sid })
+                        response = minestorm.get("console.networking").request({ 'status': 'command', 'server': minestorm.get("console.ui").focus, 'command': self.content, 'sid': sid })
                     except Exception as e:
                         # If an exception occured display it in the infobar
                         minestorm.get("console.ui").infobar.message("Exception: {!s}".format(e))

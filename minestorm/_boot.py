@@ -158,14 +158,13 @@ class ServerBooter( BaseBooter ):
         manager.register( minestorm.server.requests.PingProcessor() )
         manager.register( minestorm.server.requests.NewSessionProcessor() )
         manager.register( minestorm.server.requests.RemoveSessionProcessor() )
-        manager.register( minestorm.server.requests.ChangeFocusProcessor() )
         manager.register( minestorm.server.requests.StartServerProcessor() )
         manager.register( minestorm.server.requests.StopServerProcessor() )
         manager.register( minestorm.server.requests.StartAllServersProcessor() )
         manager.register( minestorm.server.requests.StopAllServersProcessor() )
         manager.register( minestorm.server.requests.CommandProcessor() )
         manager.register( minestorm.server.requests.StatusProcessor() )
-        manager.register( minestorm.server.requests.UpdateProcessor() )
+        manager.register( minestorm.server.requests.RetrieveLinesProcessor() )
         # Subscribe for new requests
         minestorm.get('server.networking').subscribe( manager.sort, {}, 'request' )
 
@@ -181,8 +180,6 @@ class ServerBooter( BaseBooter ):
         """ Boot the sessions manager """
         manager = minestorm.server.sessions.SessionsManager()
         minestorm.bind('server.sessions', manager)
-        # Subscribe for output lines
-        minestorm.get('server.servers').subscribe(manager.add_line, {}, 'line', 'server')
 
     def boot_6_manager(self):
         """ Boot the server manager """
