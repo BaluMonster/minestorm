@@ -3,6 +3,7 @@ import unittest
 import minestorm.test.container
 import minestorm.test.common.configuration
 import minestorm.test.common.resources
+import minestorm.test.common.events
 
 def load(case):
     """ Add a test to the suite """
@@ -16,6 +17,7 @@ def generate_suite():
     suite.addTest( load( minestorm.test.common.configuration.ConfigurationTestCase ) )
     suite.addTest( load( minestorm.test.common.resources.ResourcesTestCase ) )
     suite.addTest( load( minestorm.test.common.resources.ResourceTestCase ) )
+    suite.addTest( load( minestorm.test.common.events.EventsTestCase ) )
     return suite
 
 def run():
