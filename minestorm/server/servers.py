@@ -214,7 +214,14 @@ class Server:
         if start >= 0 and start > len(self.output)-1:
             start = -1
         # Get the result
-        lines = self.output[start:stop]
+        if stop == -1:
+            lines = self.output[start:]
+        else:
+            # If the stop point is negative increase it by one
+            # to prevent strange behaviors
+            if stop < 0:
+                stop += 1
+            lines = self.output[start:stop]
         # Add indexes to lines
         starting_at = start if start >= 0 else len(self.output)+start # Get starting index
         result = {}
