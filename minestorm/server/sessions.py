@@ -67,13 +67,6 @@ class SessionsManager:
         else:
             raise KeyError('Invalid sid: {}'.format(sid))
 
-    def add_line(self, server, line):
-        """ Add a line to all sessions which are listening that server """
-        for session in self.sessions:
-            # Add the line only if the server focus is in that server
-            if self.get(session).focus == server:
-                self.get(session).add_line(line) # Add the line
-
 class Session:
     """
     Representation of a session
@@ -82,23 +75,12 @@ class Session:
     def __init__(self, sid, user):
         self.sid = sid
         self.user = user
-        self.new_lines = []
-        self.focus = None
         self.last_packet = time.time()
 
     def touch(self):
         """ Update the last packet time """
         self.last_packet = time.time()
         logging.getLogger('minestorm.sessions').debug('Touched session {}'.format(self.sid))
-
-    def add_line(self, line):
-        """ Add a line to the session stream """
-        self.new_lines.append(line)
-
-    def change_focus(self, new):
-        """ Change the session focus """
-        self.focus = new
-        self.new_lines = [] # Clear new lines
 
 class SessionsClearerThread(threading.Thread):
     """
