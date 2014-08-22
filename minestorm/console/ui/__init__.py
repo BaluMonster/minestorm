@@ -85,9 +85,6 @@ class Console:
         """ Load updates from the requests """
         # Accept only "updates" status codes
         if data['status'] == 'updates':
-            # Load new lines
-            for line in data['new_lines']:
-                self.stream.add_line(line)
             self.sidebar.set_box_value('RAM', data['ram_used'])
 
     def loop(self):

@@ -119,6 +119,10 @@ class Server:
         self._lines = {}
         self._last_line_identifier = -1
 
+    def all_lines(self):
+        """ Get all lines from the cache """
+        return self._lines.copy()
+
 class SyncherThread(threading.Thread):
     """
     Thread which sync the cache
@@ -130,6 +134,14 @@ class SyncherThread(threading.Thread):
 
     def run(self):
         while not self.stop:
-            minestorm.get('console.servers').sync()
+            minestorm.get('console.servers').sync() # Sync the local cache
+            # Retrieve last lines
+            for server in minestorm.get('console.servers').all().values():
+                try:
+                    server.retrieve_last_lines()
+                except SyncError:
+                    pass
+            # Update the UI
             minestorm.get('console.ui').sidebar.update() # Update the sidebar
-            time.sleep(1)
+            minestorm.get('console.ui').stream.update() # Update the stream
+            time.sleep(0.5)

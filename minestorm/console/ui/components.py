@@ -75,28 +75,24 @@ class StreamComponent(BaseComponent):
         self.height = screen.lines - 3
         self.width = screen.cols - 30
         super(StreamComponent, self).__init__(screen)
-        # Setup lines
-        self.lines = []
         self.position = 0
-
-    def add_line(self, line):
-        """ Add a line to the stream """
-        self.lines.append(line) # Append the line to the stream
-        # Move the position to the last line
-        # if the position wasn't moved
-        self.position = len(self.lines)
-        self.update() # Update the screen
 
     def update(self):
         """ Update the screen """
+        focus = minestorm.get('console.ui').focus
+        if focus:
+            lines = list( minestorm.get('console.servers').get( focus ).all_lines().values() )
+        else:
+            lines = []
+        self.position = len(lines) # temp fix
         max_lines = self.height
         # If the number of lines is lower than the max number of lines
         # display all of them
         # Else display only the desidered chunk
-        if ( len(self.lines) < max_lines ) or self.position-max_lines < 0:
-            chunk = self.lines
+        if ( len(lines) < max_lines ) or self.position-max_lines < 0:
+            chunk = lines
         else:
-            chunk = self.lines[ (self.position-max_lines) : self.position ]
+            chunk = lines[ (self.position-max_lines) : self.position ]
         # Split lines into small parts
         # Needed to avoid lines truncating
         new_chunk = []
