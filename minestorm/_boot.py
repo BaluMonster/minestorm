@@ -73,14 +73,19 @@ class GlobalBooter( BaseBooter ):
     """
     name = 'global'
 
-    def boot_1_configuration(self):
+    def boot_1_events(self):
+        """ Boot the events system """
+        manager = minestorm.common.events.EventsManager()
+        minestorm.bind('events', manager)
+
+    def boot_2_configuration(self):
         """ Boot configuration """
         manager = minestorm.common.configuration.ConfigurationManager()
         minestorm.bind("configuration", manager)
         # Load configuration
         manager.load("minestorm.json")
 
-    def boot_2_resources(self):
+    def boot_3_resources(self):
         """ Boot the resources manager """
         manager = minestorm.common.resources.ResourcesManager()
         minestorm.bind("resources", manager)
