@@ -50,23 +50,13 @@ class Container:
         """ Flush the container removing all the keys """
         self._items = {} # Simply remove all
 
-_shutdown_functions = []
 shutdowned = False
-
-def register_shutdown_function(function):
-    """ Register a function which will be executed at shutdown """
-    # Accept only callable things
-    if callable(function):
-        _shutdown_functions.append(function)
-    else:
-        raise RuntimeError('Passed argument must be callable')
 
 def shutdown():
     """ Shutdown minestorm """
     global shutdowned
     # Execute all shutdown functions
-    for function in _shutdown_functions:
-        function()
+    get('events').trigger('core.shutdown')
     shutdowned = True
 
 # Shutdown correctly when SIGINT is recived
@@ -93,3 +83,8 @@ _booter.register( minestorm._boot.CliBooter() )
 _booter.register( minestorm._boot.ServerBooter() )
 
 boot = _booter.boot
+
+boot('global') # Boot global part of minestorm
+
+# Register shutdown events
+get('events').create('core.shutdown')

@@ -50,7 +50,7 @@ class MinestormConsole:
 
     def start(self):
         """ Start the console """
-        minestorm.register_shutdown_function(self.shutdown)
+        minestorm.get('events').listen('core.shutdown', lambda e: self.shutdown())
         minestorm.get("console.networking.updater").start()
         minestorm.get("console.ui").loop()
 
