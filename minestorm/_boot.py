@@ -143,6 +143,9 @@ class ServerBooter( BaseBooter ):
 
     def boot_2_networking(self):
         """ Boot the networking """
+        # Create events
+        minestorm.get('events').create('server.networking.request_received')
+        # Boot the networking
         manager = minestorm.server.networking.Listener()
         minestorm.bind('server.networking', manager)
         # Bind the console port
@@ -171,8 +174,9 @@ class ServerBooter( BaseBooter ):
         manager.register( minestorm.server.requests.CommandProcessor() )
         manager.register( minestorm.server.requests.StatusProcessor() )
         manager.register( minestorm.server.requests.UpdateProcessor() )
-        # Subscribe for new requests
-        minestorm.get('server.networking').subscribe( manager.sort, {}, 'request' )
+        # Listen for events
+        listener = lambda event: manager.sort(event.data['request'])
+        minestorm.get('events').listen('server.networking.request_received', listener, 100)
 
     def boot_4_servers(self):
         """ Boot the servers manager """
