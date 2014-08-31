@@ -73,14 +73,19 @@ class GlobalBooter( BaseBooter ):
     """
     name = 'global'
 
-    def boot_1_configuration(self):
+    def boot_1_events(self):
+        """ Boot the events system """
+        manager = minestorm.common.events.EventsManager()
+        minestorm.bind('events', manager)
+
+    def boot_2_configuration(self):
         """ Boot configuration """
         manager = minestorm.common.configuration.ConfigurationManager()
         minestorm.bind("configuration", manager)
         # Load configuration
         manager.load("minestorm.json")
 
-    def boot_2_resources(self):
+    def boot_3_resources(self):
         """ Boot the resources manager """
         manager = minestorm.common.resources.ResourcesManager()
         minestorm.bind("resources", manager)
@@ -138,6 +143,9 @@ class ServerBooter( BaseBooter ):
 
     def boot_2_networking(self):
         """ Boot the networking """
+        # Create events
+        minestorm.get('events').create('server.networking.request_received')
+        # Boot the networking
         manager = minestorm.server.networking.Listener()
         minestorm.bind('server.networking', manager)
         # Bind the console port
@@ -165,8 +173,9 @@ class ServerBooter( BaseBooter ):
         manager.register( minestorm.server.requests.CommandProcessor() )
         manager.register( minestorm.server.requests.StatusProcessor() )
         manager.register( minestorm.server.requests.RetrieveLinesProcessor() )
-        # Subscribe for new requests
-        minestorm.get('server.networking').subscribe( manager.sort, {}, 'request' )
+        # Listen for events
+        listener = lambda event: manager.sort(event.data['request'])
+        minestorm.get('events').listen('server.networking.request_received', listener, 100)
 
     def boot_4_servers(self):
         """ Boot the servers manager """
@@ -185,5 +194,5 @@ class ServerBooter( BaseBooter ):
         """ Boot the server manager """
         manager = minestorm.server.MinestormServer()
         minestorm.bind('server', manager)
-        # Register shutdown function
-        minestorm.register_shutdown_function( manager.shutdown )
+        # Listen to events
+        minestorm.get('events').listen('core.shutdown', lambda e: manager.shutdown())

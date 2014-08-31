@@ -17,7 +17,6 @@ class Listener:
         self.binded = False
         self.started = False
         self.thread = None
-        self.subscribers = []
         self.logger = logging.getLogger('minestorm.networking')
 
     def bind(self, port):
@@ -77,11 +76,6 @@ class Listener:
         else:
             raise RuntimeError('Can\'t stop a stopped server...')
 
-    def subscribe(self, method, args={}, argname='request'):
-        """ Subscribe for new requests """
-        # Append the subscriber to the list
-        self.subscribers.append( { 'method': method, 'args': args, 'argname': argname } )
-
     # Events called by ListenerThread
 
     def _on_request_recived(self, conn, addr, data):
@@ -89,11 +83,7 @@ class Listener:
         request = Request(conn, addr, data)
         self.logger.debug('Recived request from {request.address[0]}:{request.address[1]} containing \'{data}\''.format(request=request, data=data.decode("utf-8").strip()))
         # Notify subscribers
-        for subscriber in self.subscribers:
-            # Call the method
-            args = subscriber['args']
-            args[subscriber['argname']] = request
-            subscriber['method'](**args)
+        minestorm.get('events').trigger('server.networking.request_received', data={'request': request})
 
 class Request:
     """
