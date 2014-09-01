@@ -104,9 +104,15 @@ class ConsoleCommand(Command):
     name = 'console'
     description = 'start the console'
 
+    def boot(self, parser):
+        parser.add_argument('server', help='choose for which server start the console', nargs='?', default=None)
+
     def run(self, args):
         try:
             console = minestorm.console.MinestormConsole()
+            if args.server:
+                if args.server in minestorm.get('console.servers').all():
+                    minestorm.get('console.ui').focus = args.server
             console.start()
         finally:
             curses.endwin()
