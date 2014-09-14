@@ -10,4 +10,5 @@ Here you can see all changes which were applied to minestorm in the past.
 * Added the **configure** cli command
 * Added the **[server]** option to *console* command to switch to a console at start
 * Added **--message** option to *stop* and *stop-all* cli commands to specify stop message
+* Added the **--configuration** option to all commands to change the configuration file
 * Created `setup.py` to create a portable installer

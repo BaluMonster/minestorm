@@ -26,6 +26,7 @@ class CommandsManager( minestorm.common.resources.ResourceWrapper ):
         """ Prepare the arguments parser """
         parser = ArgumentParser(prog="minestorm") # Initialize a new ArgumentParser instance
         parser.add_argument('--version', version=minestorm.__version__, action='version')
+        parser.add_argument('-c', '--configuration', help='set the configuration file path', dest='_configuration', metavar='PATH', default=None)
         subs = parser.add_subparsers(help='commands', dest='_command') # Initialize the subparser for the main command
         for name, command in self:
             sub = subs.add_parser(name, help=command.description) # Register the command
@@ -36,12 +37,24 @@ class CommandsManager( minestorm.common.resources.ResourceWrapper ):
         """ "Route" a call into the right command """
         parser = self.prepare_parser() # Get the parser
         args = parser.parse_args() # Parse the arguments
+        # If a configuration file was provided load it
+        if args._configuration:
+            self._load_configuration(args._configuration)
         # If a command is provided execute it
         # else show the usage
         if args._command:
             self[args._command].run(args) # Run the command
         else:
             parser.print_usage()
+
+    def _load_configuration(self, file_name):
+        """ Handler for the -c option """
+        # If the path exists load it
+        if os.path.exists(file_name):
+            minestorm.get('configuration').load(file_name)
+        else:
+            print('Error: configuration file not found: {}'.format(file_name))
+            minestorm.shutdown()
 
 class Command:
     name = '__base__'
