@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 import inspect
 import logging
+import os
+import pkg_resources
 import minestorm
 import minestorm.common
 import minestorm.common.configuration
@@ -82,8 +84,12 @@ class GlobalBooter( BaseBooter ):
         """ Boot configuration """
         manager = minestorm.common.configuration.ConfigurationManager()
         minestorm.bind("configuration", manager)
-        # Load configuration
-        manager.load( manager.default_file_path() )
+        # Load configuration from the default path
+        if os.path.exists( manager.default_file_path() ):
+            manager.load( manager.default_file_path() )
+        # Else load it from the bundled sample
+        else:
+            manager.load(pkg_resources.resource_filename('minestorm', '_samples/configuration.json'))
 
     def boot_3_resources(self):
         """ Boot the resources manager """

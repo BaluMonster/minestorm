@@ -302,10 +302,7 @@ class ConfigureCommand(Command):
         # Copy it to its destination
         if not os.path.exists(destination):
             # Create base directories if needed
-            try:
-                os.makedirs( os.path.dirname(destination) )
-            except FileExistsError:
-                pass
+            os.makedirs( os.path.dirname(destination), exist_ok=True)
             # Save the configuration file
             with open(destination, 'w') as f:
                 f.write(content)
