@@ -41,10 +41,12 @@ setuptools.setup(
         'minestorm.console.ui',
         'minestorm.server',
         'minestorm.test',
+        'minestorm.test.common',
     ],
     package_dir={
         'minestorm': 'minestorm',
     },
+    zip_safe=False,
 
     entry_points = {
         'console_scripts': [

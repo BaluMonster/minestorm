@@ -10,3 +10,4 @@ __pycache__
 /minestorm.egg-info
 /setuptools-*
 /build
+/dist
