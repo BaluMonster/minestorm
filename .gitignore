@@ -3,3 +3,10 @@ __pycache__
 /test
 /minestorm.json
 /.uninstaller-info
+
+/env
+
+# Setuptools stuff
+/minestorm.egg-info
+/setuptools-*
+/build

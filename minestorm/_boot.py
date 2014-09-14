@@ -83,7 +83,7 @@ class GlobalBooter( BaseBooter ):
         manager = minestorm.common.configuration.ConfigurationManager()
         minestorm.bind("configuration", manager)
         # Load configuration
-        manager.load("minestorm.json")
+        manager.load( manager.default_file_path() )
 
     def boot_3_resources(self):
         """ Boot the resources manager """
@@ -118,6 +118,7 @@ class CliBooter( BaseBooter ):
         manager.register( minestorm.cli.ConsoleCommand() )
         manager.register( minestorm.cli.StatusCommand() )
         manager.register( minestorm.cli.TestCommand() )
+        manager.register( minestorm.cli.ConfigureCommand() )
 
 class ServerBooter( BaseBooter ):
     """

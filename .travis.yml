@@ -4,6 +4,7 @@ python:
   - "3.3"
   - "3.4"
 install:
-  - cp minestorm.json.testing minestorm.json
+  - python3 setup.py install
+  - minestorm configure
 script:
-  - python cli.py test
+  - minestorm test

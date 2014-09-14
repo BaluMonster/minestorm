@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import json
+import os
 import minestorm
 
 class ConfigurationManager:
@@ -96,3 +97,15 @@ class ConfigurationManager:
     def flush(self):
         """ Flush all configuration entries """
         self._entries = {}
+
+    def default_file_path(self):
+        """ Get the default file path """
+        # If we're into a virtual env save configuration file in it
+        if 'VIRTUAL_ENV' in os.environ:
+            return os.path.join( os.environ['VIRTUAL_ENV'], '.config', 'minestorm.json' )
+        # If we're root save configuration file in /etc
+        elif os.getuid() == 0:
+            return os.path.join( '/etc', 'minestorm.json' )
+        # Else save the configuration file in our home
+        else:
+            return os.path.join( '~', '.config', 'minestorm.json' )

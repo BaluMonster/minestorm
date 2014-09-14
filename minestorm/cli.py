@@ -7,6 +7,10 @@ import json
 import time
 import datetime
 import struct
+import shutil
+import os
+import pkg_resources
+import minestorm
 import minestorm.common.resources
 import minestorm.common
 import minestorm.console
@@ -282,3 +286,35 @@ class TestCommand(Command):
 
     def run(self, args):
         minestorm.test.run()
+
+class ConfigureCommand(Command):
+    """
+    Command which configure minestorm
+    """
+    name = 'configure'
+    description = 'copy configuration files at there locations'
+
+    def run(self, args):
+        # Get the content of the default file bundled with setuptools
+        content = pkg_resources.resource_string('minestorm', '_samples/configuration.json').decode('utf-8')
+        # Get the destination directory
+        destination = minestorm.get('configuration').default_file_path()
+        # Copy it to its destination
+        if not os.path.exists(destination):
+            # Create base directories if needed
+            try:
+                os.makedirs( os.path.dirname(destination) )
+            except FileExistsError:
+                pass
+            # Save the configuration file
+            with open(destination, 'w') as f:
+                f.write(content)
+            print('The minestorm configuration file is now at {}'.format(destination))
+        else:
+            print('Error: minestorm: a file already exists at {}'.format(destination))
+
+def main():
+    """ CLI entry point """
+    minestorm.boot('cli')
+    minestorm.get('cli').route()
+
